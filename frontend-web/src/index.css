@@ -62,14 +62,6 @@ body {
   animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Glassmorphism details */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
 /* Premium Card Styles */
 .premium-card {
   background: var(--bg-container);
@@ -145,4 +137,212 @@ body {
   font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
+}
+
+/* ==========================================================================
+   SMARTPHONE DEVICE FRAME PREVIEW (375x812 - iPhone X/11 Pro Aspect Ratio)
+   ========================================================================== */
+
+.smartphone-frame-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+  perspective: 1000px;
+}
+
+.smartphone-shell {
+  width: 375px;
+  height: 812px;
+  background: #000000;
+  border-radius: 44px;
+  box-shadow: 
+    0px 0px 0px 4px #262626,
+    0px 0px 0px 12px #0a0a0a,
+    0px 20px 40px rgba(0, 0, 0, 0.25),
+    0px 10px 15px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: var(--transition);
+}
+
+.smartphone-shell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 170px;
+  height: 30px;
+  background: #000000;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  z-index: 100;
+}
+
+/* Status Bar Inside Phone Screen */
+.smartphone-statusbar {
+  height: 40px;
+  padding: 0 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1677ff;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 99;
+  position: relative;
+  user-select: none;
+}
+
+/* Home Indicator Bar at the bottom */
+.smartphone-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 5px;
+  background: #000000;
+  border-radius: 10px;
+  z-index: 99;
+  opacity: 0.8;
+}
+
+/* Screen Viewport Inside Phone Shell */
+.smartphone-screen {
+  width: 100%;
+  height: calc(100% - 40px); /* accounting for statusbar */
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Scrollable Container Inside Phone Screen */
+.smartphone-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  padding-bottom: 24px;
+}
+
+/* Custom Scrollbars for the Mobile App Frame */
+.smartphone-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.smartphone-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+/* Mobile Banner styling */
+.mobile-app-banner {
+  background: linear-gradient(135deg, #1677ff 0%, #0050b3 100%);
+  border-radius: 16px;
+  padding: 20px;
+  color: #ffffff;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Phone Cards inside simulator */
+.mobile-app-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.mobile-app-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Dynamic countdown visual overlay */
+.mobile-timer-circle {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  border: 6px solid #e6f4ff;
+  border-top-color: #ff4d4f;
+  margin: 16px auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: spinLight 1.5s linear infinite paused;
+}
+
+.mobile-timer-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff4d4f;
+  font-family: monospace;
+}
+
+/* Bottom Tabbar Inside Screen */
+.smartphone-tabbar {
+  height: 60px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: 4px;
+  z-index: 98;
+}
+
+.smartphone-tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: var(--transition);
+  flex: 1;
+}
+
+.smartphone-tab-item-active {
+  color: #1677ff;
+}
+
+.smartphone-tab-label {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+/* Strike counter meter */
+.mobile-strike-scale {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.mobile-strike-step {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  margin: 0 4px;
+  transition: var(--transition);
+}
+
+.mobile-strike-step-active {
+  background: #ff4d4f;
+  box-shadow: 0 0 6px rgba(255, 77, 79, 0.4);
 }
