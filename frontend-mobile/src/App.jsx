@@ -75,6 +75,19 @@ export default function App() {
   // Announcement modal state
   const [announcementsVisible, setAnnouncementsVisible] = useState(false);
 
+  // New unified action states
+  const [complaintModalVisible, setComplaintModalVisible] = useState(false);
+  const [lostFoundModalVisible, setLostFoundModalVisible] = useState(false);
+  const [lostFoundList] = useState([
+    { id: 'LF-902', name: 'Apple iPad Air (5th Gen)', description: 'Space Gray color, dark green case.', location: 'Level 2: Quiet Area (Desk 22)', date: '2026-05-23' },
+    { id: 'LF-903', name: 'Hydro Flask Water Bottle', description: '32oz, Cobalt Blue with engineering stickers.', location: 'Level 1: Collaborative Zone (Table B)', date: '2026-05-24' },
+    { id: 'LF-905', name: 'UTM Student ID Card', description: 'Matrix card belonging to Muhammad Aliff (A21CS0221).', location: 'Ground Floor Scanner', date: '2026-05-25' }
+  ]);
+
+  const handleSubmitComplaint = (complaint) => {
+    message.success(`🛠️ Defect Complaint filed under seat ${complaint.seatId}! Admin notified.`);
+  };
+
   // Timer runner
   useEffect(() => {
     let interval = null;
@@ -285,6 +298,7 @@ export default function App() {
           {activeTab === 'book' && (
             <ReserveSeat
               student={student}
+              setStudent={setStudent}
               selectedLibrary={selectedLibrary}
               setSelectedLibrary={setSelectedLibrary}
               selectedArea={selectedArea}
@@ -296,6 +310,13 @@ export default function App() {
               confirmationVisible={confirmationVisible}
               setConfirmationVisible={setConfirmationVisible}
               handleConfirmReservation={handleConfirmReservation}
+              setAnnouncementsVisible={setAnnouncementsVisible}
+              complaintModalVisible={complaintModalVisible}
+              setComplaintModalVisible={setComplaintModalVisible}
+              lostFoundModalVisible={lostFoundModalVisible}
+              setLostFoundModalVisible={setLostFoundModalVisible}
+              handleSubmitComplaint={handleSubmitComplaint}
+              lostFoundList={lostFoundList}
             />
           )}
           {activeTab === 'booking' && (
