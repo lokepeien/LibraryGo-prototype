@@ -16,21 +16,19 @@ import {
   WifiOutlined,
   MobileOutlined,
   BellOutlined,
-  ScanOutlined,
-  BookOutlined
+  ScanOutlined
 } from '@ant-design/icons';
 
 // Import Separated Screen Components
 import HomeDashboard from './components/HomeDashboard';
-import ReserveSeat from './components/ReserveSeat';
 import ActiveBooking from './components/ActiveBooking';
 import BookingHistory from './components/BookingHistory';
 
 const { Title, Text, Paragraph } = Typography;
 
 export default function App() {
-  // Navigation states: 'book' | 'home' | 'booking' | 'history'
-  const [activeTab, setActiveTab] = useState('book');
+  // Centralised bottom tabs: 'home' (First Page Hub) | 'booking' (Live) | 'history' (Log)
+  const [activeTab, setActiveTab] = useState('home');
 
   // UTM Student Mock Database State
   const [student, setStudent] = useState({
@@ -46,7 +44,7 @@ export default function App() {
     areaName: 'Level 2: Quiet Study Area',
     nfcUid: '04:E3:4C:6A:B2:1A:80',
     status: 'Reserved', // 'None' | 'Reserved' | 'CheckedIn' | 'Completed'
-    timeRemaining: 900, // 15 mins checkout countdown in seconds
+    timeRemaining: 900, // 15 mins grace check-in in seconds
     timerRunning: true
   });
 
@@ -59,7 +57,7 @@ export default function App() {
     { key: '5', date: '2026-05-15', seat: 'L1-S01', time: '11:00 AM - 01:00 PM', status: 'Expired', reason: 'Missed 5-minute NFC grace period' }
   ]);
 
-  // New Reservation Form State
+  // New Reservation Form State (Managed centrally, routed by Home Page)
   const [selectedLibrary, setSelectedLibrary] = useState('Perpustakaan Sultanah Zanariah (PSZ)');
   const [selectedArea, setSelectedArea] = useState('Level 2: Quiet Study Area');
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('10:00 AM - 12:00 PM');
@@ -74,19 +72,6 @@ export default function App() {
 
   // Announcement modal state
   const [announcementsVisible, setAnnouncementsVisible] = useState(false);
-
-  // New unified action states
-  const [complaintModalVisible, setComplaintModalVisible] = useState(false);
-  const [lostFoundModalVisible, setLostFoundModalVisible] = useState(false);
-  const [lostFoundList] = useState([
-    { id: 'LF-902', name: 'Apple iPad Air (5th Gen)', description: 'Space Gray color, dark green case.', location: 'Level 2: Quiet Area (Desk 22)', date: '2026-05-23' },
-    { id: 'LF-903', name: 'Hydro Flask Water Bottle', description: '32oz, Cobalt Blue with engineering stickers.', location: 'Level 1: Collaborative Zone (Table B)', date: '2026-05-24' },
-    { id: 'LF-905', name: 'UTM Student ID Card', description: 'Matrix card belonging to Muhammad Aliff (A21CS0221).', location: 'Ground Floor Scanner', date: '2026-05-25' }
-  ]);
-
-  const handleSubmitComplaint = (complaint) => {
-    message.success(`🛠️ Defect Complaint filed under seat ${complaint.seatId}! Admin notified.`);
-  };
 
   // Timer runner
   useEffect(() => {
@@ -243,21 +228,6 @@ export default function App() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const getScreenTitle = () => {
-    switch (activeTab) {
-      case 'home':
-        return 'LibraryGo Home';
-      case 'book':
-        return 'Reserve Seat';
-      case 'booking':
-        return 'Live Session';
-      case 'history':
-        return 'Attendance Logs';
-      default:
-        return 'LibraryGo';
-    }
-  };
-
   return (
     <div className="phone-shell">
       {/* Notch / Dynamic Island Detail */}
@@ -293,12 +263,6 @@ export default function App() {
               setNfcModalVisible={setNfcModalVisible}
               setAnnouncementsVisible={setAnnouncementsVisible}
               formatTimer={formatTimer}
-            />
-          )}
-          {activeTab === 'book' && (
-            <ReserveSeat
-              student={student}
-              setStudent={setStudent}
               selectedLibrary={selectedLibrary}
               setSelectedLibrary={setSelectedLibrary}
               selectedArea={selectedArea}
@@ -310,13 +274,6 @@ export default function App() {
               confirmationVisible={confirmationVisible}
               setConfirmationVisible={setConfirmationVisible}
               handleConfirmReservation={handleConfirmReservation}
-              setAnnouncementsVisible={setAnnouncementsVisible}
-              complaintModalVisible={complaintModalVisible}
-              setComplaintModalVisible={setComplaintModalVisible}
-              lostFoundModalVisible={lostFoundModalVisible}
-              setLostFoundModalVisible={setLostFoundModalVisible}
-              handleSubmitComplaint={handleSubmitComplaint}
-              lostFoundList={lostFoundList}
             />
           )}
           {activeTab === 'booking' && (
@@ -336,10 +293,6 @@ export default function App() {
 
         {/* Tabbar Navigation */}
         <div className="phone-tabbar">
-          <div className={`tab-item ${activeTab === 'book' ? 'active' : ''}`} onClick={() => setActiveTab('book')}>
-            <BookOutlined className="tab-item-icon" />
-            <span>Reserve</span>
-          </div>
           <div className={`tab-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
             <HomeOutlined className="tab-item-icon" />
             <span>Home</span>
