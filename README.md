@@ -1,16 +1,66 @@
-# React + Vite
+# ⚡ LibraryGo - Academic Seat & Facilities Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to the **LibraryGo** prototype workspace. This repository has been structured as a complete full-stack monorepo containing the Express API backend, the React Vite web admin dashboard, and the React Native student mobile companion application.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 📂 Repository Structure
 
-## React Compiler
+```text
+librarygo/ (Repository Root)
+├── backend/               # Node.js + Express.js API Server
+│   ├── src/
+│   │   └── index.js       # Main server entrypoint (REST API routes)
+│   ├── package.json       # Backend script commands & dependencies
+│   └── ...
+├── frontend-web/          # Admin/Librarian Web Dashboard (React + AntD)
+│   ├── src/
+│   │   ├── App.jsx        # Admin dashboard structure (stateful)
+│   │   └── index.css      # Customized AntD styling overrides
+│   ├── public/
+│   ├── package.json       # React Vite dev scripts & dependencies
+│   └── ...
+└── frontend-mobile/       # Student/Admin Mobile App (React Native)
+    ├── android/           # Stub Gradle files
+    ├── ios/               # Stub CocoaPods config
+    ├── src/
+    ├── App.jsx            # Student NFC booking & timer screens
+    ├── package.json       # React Native runner scripts
+    └── ...
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Components & How to Run
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 1. `backend/` (Express API)
+Provides APIs for seat states, student strikes, disciplinary blacklists, and environment complaints.
+* **Dependencies**: `express`, `cors`
+* **Dev Dependencies**: `nodemon`
+* **Commands**:
+  ```bash
+  cd backend
+  npm install
+  npm run dev   # Starts Nodemon watcher at http://localhost:5000
+  ```
+
+### 2. `frontend-web/` (Admin Web Dashboard)
+Real-time dashboard for librarians built with Ant Design (AntD v5). Contains collapsible sidebar tabs, interactive metrics, dynamic badge selectors, expandable tables with real-time comments, and search features.
+* **Dependencies**: `antd`, `@ant-design/icons`, `react`, `react-dom`
+* **Commands**:
+  ```bash
+  cd frontend-web
+  npm install
+  npm run dev   # Starts Vite server at http://localhost:5173
+  ```
+
+### 3. `frontend-mobile/` (Student Mobile App)
+Misplacement recovery and seat checking client built on React Native. Simulates scanning desk-embedded physical NFC Tags, auto-release timers, and alerts.
+* **Dependencies**: `react`, `react-native`
+* **Commands**:
+  ```bash
+  cd frontend-mobile
+  npm install
+  npm run android # Run on Android Emulator
+  npm run ios     # Run on iOS Simulator
+  ```
