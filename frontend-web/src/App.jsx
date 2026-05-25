@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Layout,
   Menu,
@@ -41,28 +41,11 @@ import {
   InboxOutlined,
   CalendarOutlined,
   EnvironmentOutlined,
+  EyeOutlined,
   FieldTimeOutlined,
   CoffeeOutlined,
-  MobileOutlined,
-  WifiOutlined,
-  HistoryOutlined,
-  ScanOutlined,
-  HomeOutlined,
-  BookOutlined,
-  BulbOutlined,
-  WarningOutlined
+  TagOutlined
 } from '@ant-design/icons';
-import {
-  TabBar as MobileTabBar,
-  Steps as MobileSteps,
-  Button as MobileButton,
-  Card as MobileCard,
-  List as MobileList,
-  Tag as MobileTag,
-  NoticeBar as MobileNoticeBar,
-  Toast as MobileToast,
-  Dialog as MobileDialog
-} from 'antd-mobile';
 import './App.css';
 
 const { Header, Content, Sider } = Layout;
@@ -71,29 +54,53 @@ const { useBreakpoint } = Grid;
 
 // --- INITIAL MOCK DATA ---
 
+const initialStats = {
+  totalSeats: 160,
+  occupiedSeats: 72,
+  blacklistCount: 8,
+  pendingComplaints: 4,
+  unclaimedItems: 12
+};
+
 const initialBlacklist = [
-  { key: '1', studentId: 'A22CS0148', name: 'Ahmad Faiz bin Azmi', strikes: 2, status: 'Active' },
+  { key: '1', studentId: 'A22CS0148', name: 'Ahmad Faiz bin Azmi', strikes: 3, status: 'Blacklisted' },
   { key: '2', studentId: 'A21EC0052', name: 'Tan Mei Ling', strikes: 2, status: 'Active' },
   { key: '3', studentId: 'A22CS0089', name: 'Saraswathy a/p Mohan', strikes: 3, status: 'Blacklisted' },
   { key: '4', studentId: 'A20EC0110', name: 'Brandon Lim Wei Shen', strikes: 1, status: 'Active' },
-  { key: '5', studentId: 'B22CS0302', name: 'Nurul Izzah binti Rosli', strikes: 3, status: 'Blacklisted' }
+  { key: '5', studentId: 'B22CS0302', name: 'Nurul Izzah binti Rosli', strikes: 3, status: 'Blacklisted' },
+  { key: '6', studentId: 'A21CS0221', name: 'Muhammad Aliff bin Zulkifli', strikes: 0, status: 'Active' },
+  { key: '7', studentId: 'A22EC0024', name: 'Chong Jia Yi', strikes: 3, status: 'Blacklisted' },
+  { key: '8', studentId: 'A20CS0005', name: 'Haris Haroon', strikes: 2, status: 'Active' }
 ];
 
 const initialSeats = [
   // Level 1: Collaborative Zone
-  { id: 'L1-S01', area: 'Level 1: Collaborative Zone', nfcUid: '04:A2:3E:9B:10:E2:80', status: 'Available', occupant: null },
+  { id: 'L1-S01', area: 'Level 1: Collaborative Zone', nfcUid: '04:A2:3E:9B:10:E2:80', status: 'Booked', occupant: 'Ahmad Faiz (A22CS0148)' },
   { id: 'L1-S02', area: 'Level 1: Collaborative Zone', nfcUid: '04:5C:8B:1A:F5:2C:81', status: 'Available', occupant: null },
   { id: 'L1-S03', area: 'Level 1: Collaborative Zone', nfcUid: '04:FF:E2:33:6B:40:80', status: 'Booked', occupant: 'Siti Aminah (A22CS0032)' },
   { id: 'L1-S04', area: 'Level 1: Collaborative Zone', nfcUid: '04:2E:7A:B2:CC:5F:80', status: 'Available', occupant: null },
+  { id: 'L1-S05', area: 'Level 1: Collaborative Zone', nfcUid: '04:D4:6C:5F:81:4A:80', status: 'Booked', occupant: 'Jason Lee (A21CS0912)' },
+  { id: 'L1-S06', area: 'Level 1: Collaborative Zone', nfcUid: '04:3B:5A:F3:CC:89:81', status: 'Available', occupant: null },
   
   // Level 2: Quiet Study Area
-  { id: 'L2-S01', area: 'Level 2: Quiet Study Area', nfcUid: '04:E3:4C:6A:B2:1A:80', status: 'Available', occupant: null },
+  { id: 'L2-S01', area: 'Level 2: Quiet Study Area', nfcUid: '04:E3:4C:6A:B2:1A:80', status: 'Booked', occupant: 'Tan Mei Ling (A21EC0052)' },
   { id: 'L2-S02', area: 'Level 2: Quiet Study Area', nfcUid: '04:77:88:99:AA:BB:CC', status: 'Available', occupant: null },
   { id: 'L2-S03', area: 'Level 2: Quiet Study Area', nfcUid: '04:11:22:33:44:55:66', status: 'Available', occupant: null },
-  { id: 'L2-S04', area: 'Level 2: Quiet Study Area', nfcUid: '04:AA:BB:CC:DD:EE:FF', status: 'Available', occupant: null }, // Seat that student mobile checks into
-  
-  // Postgraduate Hub
-  { id: 'L3-S01', area: 'Level 3: Postgraduate Hub', nfcUid: '04:55:66:77:88:99:00', status: 'Booked', occupant: 'Dr. Sarah (Staff)' }
+  { id: 'L2-S04', area: 'Level 2: Quiet Study Area', nfcUid: '04:AA:BB:CC:DD:EE:FF', status: 'Booked', occupant: 'Saraswathy Mohan (A22CS0089)' },
+  { id: 'L2-S05', area: 'Level 2: Quiet Study Area', nfcUid: '04:12:34:56:78:90:AB', status: 'Available', occupant: null },
+  { id: 'L2-S06', area: 'Level 2: Quiet Study Area', nfcUid: '04:FE:DC:BA:98:76:54', status: 'Available', occupant: null },
+
+  // Level 3: Postgraduate Hub
+  { id: 'L3-S01', area: 'Level 3: Postgraduate Hub', nfcUid: '04:55:66:77:88:99:00', status: 'Booked', occupant: 'Dr. Sarah (Staff)' },
+  { id: 'L3-S02', area: 'Level 3: Postgraduate Hub', nfcUid: '04:AB:CD:EF:01:23:45', status: 'Available', occupant: null },
+  { id: 'L3-S03', area: 'Level 3: Postgraduate Hub', nfcUid: '04:88:99:00:11:22:33', status: 'Booked', occupant: 'Ngooi Jun (A20EC0990)' },
+  { id: 'L3-S04', area: 'Level 3: Postgraduate Hub', nfcUid: '04:44:55:66:77:88:99', status: 'Available', occupant: null },
+
+  // Ground Floor: Multimedia Room
+  { id: 'GF-S01', area: 'Ground Floor: Multimedia Room', nfcUid: '04:33:44:55:66:77:88', status: 'Booked', occupant: 'Devi Ratna (B21CS0922)' },
+  { id: 'GF-S02', area: 'Ground Floor: Multimedia Room', nfcUid: '04:22:33:44:55:66:77', status: 'Booked', occupant: 'Amiruddin (A22CS0021)' },
+  { id: 'GF-S03', area: 'Ground Floor: Multimedia Room', nfcUid: '04:11:22:33:44:55:66', status: 'Available', occupant: null },
+  { id: 'GF-S04', area: 'Ground Floor: Multimedia Room', nfcUid: '04:00:11:22:33:44:55', status: 'Available', occupant: null }
 ];
 
 const initialComplaints = [
@@ -105,8 +112,41 @@ const initialComplaints = [
     area: 'Level 2: Quiet Study Area',
     status: 'Pending',
     date: '2026-05-24',
-    facilityDetails: 'Model: York Industrial AC-400X. Located directly above Desk 14/Seat L2-S04. Leaking water condensation.',
-    adminComments: 'Scheduled service tomorrow morning.'
+    facilityDetails: 'Model: York Industrial AC-400X. Located directly above Desk 14/Seat L2-S04. Student reported that it has been leaking condensation water and making a continuous high-pitched rattling sound, disrupting studies in the quiet zone.',
+    adminComments: 'Need to contact F&M department for service. Scheduled for tomorrow morning.'
+  },
+  {
+    key: '2',
+    id: 'CMP-2026-082',
+    category: 'Power Socket Broken',
+    seatId: 'L1-S01',
+    area: 'Level 1: Collaborative Zone',
+    status: 'Under Review',
+    date: '2026-05-25',
+    facilityDetails: 'Model: Dual 3-Pin Wall Socket (Type G). Left-side socket is completely loose inside the wall box and sparks when adapters are inserted. High safety risk.',
+    adminComments: 'Technician inspected. Sockets ordered. Taped off and marked with safety warning sign.'
+  },
+  {
+    key: '3',
+    id: 'CMP-2026-079',
+    category: 'Damaged Furniture',
+    seatId: 'L3-S03',
+    area: 'Level 3: Postgraduate Hub',
+    status: 'Resolved',
+    date: '2026-05-22',
+    facilityDetails: 'Model: Steelcase Ergonomic Task Chair. Hydraulic mechanism is broken; the chair stays locked in the lowest position. Student complained of back pain.',
+    adminComments: 'Replaced with a spare ergonomic chair from the storage room on 2026-05-23. Damaged chair sent to maintenance for scrap/repair.'
+  },
+  {
+    key: '4',
+    id: 'CMP-2026-085',
+    category: 'Wi-Fi Unstable',
+    seatId: 'GF-S02',
+    area: 'Ground Floor: Multimedia Room',
+    status: 'Pending',
+    date: '2026-05-25',
+    facilityDetails: 'Router ID: AP-GF-04. Signal drops frequently (every 5-10 minutes) with high packet loss, especially when students are streaming video on the library computers.',
+    adminComments: ''
   }
 ];
 
@@ -115,9 +155,42 @@ const initialLostFound = [
     key: '1',
     id: 'LF-902',
     name: 'Apple iPad Air (5th Gen)',
-    description: 'Space Gray color, dark green magnetic folio case.',
+    description: 'Space Gray color, inside a dark green magnetic folio case. Lock screen shows UTM background with a notification for Ahmad.',
     location: 'Level 2: Quiet Study Area (Desk 22)',
     date: '2026-05-23',
+    status: 'Unclaimed',
+    claimedBy: '',
+    claimDate: ''
+  },
+  {
+    key: '2',
+    id: 'LF-903',
+    name: 'Hydro Flask Water Bottle',
+    description: '32oz Wide Mouth bottle, Cobalt Blue. Covered in UTM and engineering club stickers.',
+    location: 'Level 1: Collaborative Zone (Table B)',
+    date: '2026-05-24',
+    status: 'Unclaimed',
+    claimedBy: '',
+    claimDate: ''
+  },
+  {
+    key: '3',
+    id: 'LF-901',
+    name: 'Casio fx-570EX Calculator',
+    description: 'Scientific calculator with student name "Mei Ling" carved on the back slider cover.',
+    location: 'Level 2: Quiet Study Area (Desk 8)',
+    date: '2026-05-22',
+    status: 'Claimed',
+    claimedBy: 'A21EC0052',
+    claimDate: '2026-05-23'
+  },
+  {
+    key: '4',
+    id: 'LF-905',
+    name: 'UTM Student ID Card',
+    description: 'ID Card for Muhammad Aliff bin Zulkifli (A21CS0221). Found on the floor near the entrance scanner.',
+    location: 'Ground Floor Scanner',
+    date: '2026-05-25',
     status: 'Unclaimed',
     claimedBy: '',
     claimDate: ''
@@ -125,17 +198,19 @@ const initialLostFound = [
 ];
 
 const systemLogs = [
-  { time: '10 mins ago', message: 'Student Ahmad Faiz (A22CS0148) checked in at Seat L2-S04 via NFC mobile companion.' },
-  { time: '1 hour ago', message: 'Staff resolved facility complaint CMP-2026-079 (Damaged Chair in Level 3).' },
-  { time: '3 hours ago', message: 'New lost & found item LF-905 (Student ID Card) reported at Ground Floor.' }
+  { time: '10 mins ago', message: 'Seat L1-S01 status updated to Booked by Ahmad Faiz via NFC Tag scan.' },
+  { time: '25 mins ago', message: 'Staff resolved facility complaint CMP-2026-079 (Damaged Chair in Level 3).' },
+  { time: '1 hour ago', message: 'Student Brandon Lim (A20EC0110) strike count updated to 1 for seat no-show.' },
+  { time: '3 hours ago', message: 'New lost & found item LF-905 (Student ID Card) reported at Ground Floor.' },
+  { time: '5 hours ago', message: 'System auto-released 4 seats due to 15-minute booking grace-period timeout.' }
 ];
 
 export default function App() {
   const screens = useBreakpoint();
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1-5 Admin, 6 = Mobile App Preview
+  const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1 = Dashboard, 2 = Seats, 3 = Blacklist, 4 = Complaints, 5 = Lost & Found
   
-  // Core Databases (Synchronized State)
+  // Core States
   const [blacklist, setBlacklist] = useState(initialBlacklist);
   const [seats, setSeats] = useState(initialSeats);
   const [complaints, setComplaints] = useState(initialComplaints);
@@ -144,6 +219,7 @@ export default function App() {
   // Search and Filter States
   const [blacklistSearch, setBlacklistSearch] = useState('');
   const [seatAreaFilter, setSeatAreaFilter] = useState('All');
+  const [complaintStatusFilter, setComplaintStatusFilter] = useState('All');
   const [lostFoundFilter, setLostFoundFilter] = useState('All');
 
   // Modal States
@@ -157,87 +233,20 @@ export default function App() {
   const [lostFoundForm] = Form.useForm();
   const [claimForm] = Form.useForm();
 
-  // ==========================================
-  // STUDENT MOBILE COMPANION APP STATES
-  // ==========================================
-  const [mobileActiveTab, setMobileActiveTab] = useState('home');
-  const [mobileStrikes, setMobileStrikes] = useState(2); // Starts at 2 to demonstrate strike warnings
-  const [mobileBookingState, setMobileBookingState] = useState('Reserved'); // 'Reserved', 'CheckedIn'
-  const [mobileTimer, setMobileTimer] = useState(300); // 5-minute countdown (300s)
-  const [mobileScanning, setMobileScanning] = useState(false);
-  const [showAnnouncements, setShowAnnouncements] = useState(false);
+  // Dynamic notifications counter
+  const pendingNotifications = complaints.filter(c => c.status === 'Pending').length + lostFound.filter(lf => lf.status === 'Unclaimed').length;
 
-  // Synchronize Mobile App Check-In with Dashboard Seats Database
-  useEffect(() => {
-    setSeats(prevSeats => 
-      prevSeats.map(seat => {
-        if (seat.id === 'L2-S04') {
-          return {
-            ...seat,
-            status: mobileBookingState === 'CheckedIn' ? 'Booked' : 'Available',
-            occupant: mobileBookingState === 'CheckedIn' ? 'Ahmad Faiz (A22CS0148)' : null
-          };
-        }
-        return seat;
-      })
-    );
-  }, [mobileBookingState]);
-
-  // Handle countdown active timer tick (for CheckedIn view)
-  useEffect(() => {
-    let interval = null;
-    if (mobileBookingState === 'CheckedIn' && mobileTimer > 0) {
-      interval = setInterval(() => {
-        setMobileTimer(prev => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [mobileBookingState, mobileTimer]);
-
-  const handleMobileNfcCheckin = () => {
-    if (mobileStrikes >= 5) {
-      MobileDialog.alert({
-        header: <Text style={{ color: '#ff4d4f', fontWeight: 'bold' }}>⛔ Check-In Blocked</Text>,
-        content: 'Your library privileges are suspended due to 5 active strikes. Please see the help desk.',
-        confirmText: 'Dismiss'
-      });
-      return;
-    }
-
-    setMobileScanning(true);
-    setTimeout(() => {
-      setMobileScanning(false);
-      setMobileBookingState('CheckedIn');
-      setMobileTimer(300); // Reset timer
-      message.success('NFC Seat Verification Successful: Checked In at Seat L2-S04');
-    }, 1500);
-  };
-
-  const handleMobileCheckOut = () => {
-    setMobileBookingState('Reserved');
-    message.info('Early check-out vacated. Seat L2-S04 is now vacant.');
-  };
-
-  const handleAddMobileStrike = () => {
-    setMobileStrikes(prev => Math.min(prev + 1, 5));
-    message.warning('Strike simulated on student mobile app.');
-  };
-
-  const handleResetMobileStrikes = () => {
-    setMobileStrikes(0);
-    message.success('Strikes reset to 0.');
-  };
-
-  // Synchronize dynamic stats
+  // Calculate statistics dynamically
   const totalSeats = seats.length;
   const bookedSeats = seats.filter(s => s.status === 'Booked').length;
   const availableSeats = totalSeats - bookedSeats;
   const blacklistedCount = blacklist.filter(b => b.status === 'Blacklisted').length;
-  const activeStrikes = blacklist.reduce((acc, curr) => acc + curr.strikes, 0) + mobileStrikes;
+  const activeStrikes = blacklist.reduce((acc, curr) => acc + curr.strikes, 0);
   const unresolvedComplaints = complaints.filter(c => c.status !== 'Resolved').length;
 
-  // --- ADMIN ACTIONS ---
+  // --- ACTIONS ---
 
+  // Blacklist actions
   const handleAddBlacklist = (values) => {
     const newEntry = {
       key: String(blacklist.length + 1),
@@ -249,13 +258,13 @@ export default function App() {
     setBlacklist([newEntry, ...blacklist]);
     setIsBlacklistModalVisible(false);
     blacklistForm.resetFields();
-    message.success(`Student ${values.name} added.`);
+    message.success(`Student ${values.name} (${values.studentId.toUpperCase()}) added to monitoring list.`);
   };
 
   const handleResetStrikes = (recordKey) => {
     setBlacklist(blacklist.map(item => {
       if (item.key === recordKey) {
-        message.info(`Reset strike count for ${item.name}.`);
+        message.info(`Reset strike count for ${item.name}. Status set to Active.`);
         return { ...item, strikes: 0, status: 'Active' };
       }
       return item;
@@ -263,18 +272,17 @@ export default function App() {
   };
 
   const handleRemoveBlacklist = (recordKey) => {
+    const student = blacklist.find(item => item.key === recordKey);
     setBlacklist(blacklist.filter(item => item.key !== recordKey));
-    message.success(`Removed student record.`);
+    message.success(`Removed student ${student.name} from monitoring completely.`);
   };
 
+  // Seat booking actions
   const handleToggleSeatStatus = (seatId) => {
     setSeats(seats.map(seat => {
       if (seat.id === seatId) {
         const nextStatus = seat.status === 'Available' ? 'Booked' : 'Available';
-        // Handle student mobile check in state out-of-sync release
-        if (seatId === 'L2-S04' && nextStatus === 'Available') {
-          setMobileBookingState('Reserved');
-        }
+        message.success(`Seat ${seatId} is now ${nextStatus}.`);
         return {
           ...seat,
           status: nextStatus,
@@ -285,6 +293,7 @@ export default function App() {
     }));
   };
 
+  // Complaints actions
   const handleUpdateComplaintStatus = (complaintKey, newStatus) => {
     setComplaints(complaints.map(comp => {
       if (comp.key === complaintKey) {
@@ -304,7 +313,7 @@ export default function App() {
     }));
   };
 
-  // Lost & found actions
+  // Lost & Found actions
   const handleAddLostFound = (values) => {
     const newEntry = {
       key: String(lostFound.length + 1),
@@ -320,7 +329,7 @@ export default function App() {
     setLostFound([newEntry, ...lostFound]);
     setIsLostFoundModalVisible(false);
     lostFoundForm.resetFields();
-    message.success('Lost item logged.');
+    message.success(`New lost item "${values.name}" registered successfully.`);
   };
 
   const showClaimModal = (item) => {
@@ -331,6 +340,7 @@ export default function App() {
   const handleClaimItem = (values) => {
     setLostFound(lostFound.map(item => {
       if (item.id === selectedLostItem.id) {
+        message.success(`Item "${item.name}" marked as claimed by ${values.studentId.toUpperCase()}.`);
         return {
           ...item,
           status: 'Claimed',
@@ -343,389 +353,9 @@ export default function App() {
     setIsClaimModalVisible(false);
     claimForm.resetFields();
     setSelectedLostItem(null);
-    message.success('Item marked as claimed.');
   };
 
-  // ==========================================
-  // RENDER: STUDENT MOBILE SIMULATOR VIEW (375x812)
-  // ==========================================
-  const renderStudentMobileApp = () => {
-    const getMobileTimerString = () => {
-      const mins = Math.floor(mobileTimer / 60);
-      const secs = mobileTimer % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    return (
-      <div className="fade-in-view" style={{ padding: '10px 0' }}>
-        <Row gutter={[24, 24]} align="middle" justify="center">
-          
-          {/* View explanation panel */}
-          <Col xs={24} lg={8}>
-            <Card className="premium-card" style={{ borderLeft: '5px solid #1677ff' }}>
-              <Title level={4}>📱 Student Mobile Simulator</Title>
-              <Paragraph style={{ fontSize: '13px', lineHeight: '1.6' }}>
-                This is a high-fidelity preview of the **LibraryGo mobile student app** styled using **Ant Design Mobile** layout parameters.
-              </Paragraph>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>Interactive controls:</Text>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button size="small" icon={<PlusOutlined />} onClick={handleAddMobileStrike} block>
-                  Simulate Strike (+1 Strike)
-                </Button>
-                <Button size="small" icon={<ReloadOutlined />} onClick={handleResetMobileStrikes} block>
-                  Reset Strikes to 0
-                </Button>
-              </Space>
-              <Divider style={{ margin: '12px 0' }} />
-              <Paragraph style={{ fontSize: '12px', color: '#64748b' }}>
-                💡 **Live Sync**: Checking in or vacating seats in this mobile simulator instantly updates the web seat database (Seat **L2-S04**).
-              </Paragraph>
-            </Card>
-          </Col>
-
-          {/* Interactive Smartphone Viewport Frame */}
-          <Col xs={24} lg={16} className="smartphone-frame-container">
-            <div className="smartphone-shell">
-              {/* StatusBar Mock */}
-              <div className="smartphone-statusbar">
-                <span>00:46</span>
-                <Space size="small" style={{ fontSize: '13px' }}>
-                  <WifiOutlined />
-                  <span>5G</span>
-                </Space>
-              </div>
-
-              {/* Mobile Viewport Screen */}
-              <div className="smartphone-screen">
-                
-                {/* Scrollable Core Mobile Dashboard */}
-                <div className="smartphone-body">
-                  
-                  {/* Home Screen View */}
-                  {mobileActiveTab === 'home' && (
-                    <div className="fade-in-view">
-                      {/* Greeting Banner */}
-                      <div className="mobile-app-banner">
-                        <span style={{ fontSize: '12px', opacity: 0.8, fontWeight: 500 }}>UNIVERSITI TEKNOLOGI MALAYSIA</span>
-                        <Title level={4} style={{ color: '#ffffff', margin: '4px 0 0 0', fontWeight: 700 }}>
-                          Ahmad Faiz bin Azmi
-                        </Title>
-                        <Text style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '12px' }}>
-                          A22CS0148@utm.my
-                        </Text>
-                      </div>
-
-                      {/* Warning alert if strikes reach 5 */}
-                      {mobileStrikes === 5 && (
-                        <div style={{
-                          backgroundColor: '#fff1f0',
-                          border: '1px solid #ffa39e',
-                          borderRadius: '12px',
-                          padding: '12px',
-                          marginBottom: '16px',
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '8px'
-                        }}>
-                          <WarningOutlined style={{ color: '#ff4d4f', fontSize: '18px', marginTop: 2 }} />
-                          <div>
-                            <Text strong style={{ color: '#ff4d4f', fontSize: '13px', display: 'block' }}>
-                              CRITICAL STATUS: ACCOUNT SUSPENDED
-                            </Text>
-                            <Text style={{ color: '#ff4d4f', fontSize: '11px', lineHeight: 1.4 }}>
-                              You have accumulated 5 strikes. Gate access has been disabled. Please see the help desk.
-                            </Text>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Strike Count Card */}
-                      <div className="mobile-app-card">
-                        <div className="mobile-app-card-title">
-                          <WarningOutlined style={{ color: '#fa8c16' }} />
-                          <span>Disciplinary Strike Counter</span>
-                        </div>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                          <Text style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>Warning Scale Status:</Text>
-                          <Text strong style={{ color: mobileStrikes >= 4 ? '#ff4d4f' : '#fa8c16', fontSize: '14px' }}>
-                            {mobileStrikes} / 5 strikes
-                          </Text>
-                        </div>
-
-                        {/* Graphic Strike-O-Meter block scale */}
-                        <div className="mobile-strike-scale">
-                          <div className={`mobile-strike-step ${mobileStrikes >= 1 ? 'mobile-strike-step-active' : ''}`} />
-                          <div className={`mobile-strike-step ${mobileStrikes >= 2 ? 'mobile-strike-step-active' : ''}`} />
-                          <div className={`mobile-strike-step ${mobileStrikes >= 3 ? 'mobile-strike-step-active' : ''}`} />
-                          <div className={`mobile-strike-step ${mobileStrikes >= 4 ? 'mobile-strike-step-active' : ''}`} />
-                          <div className={`mobile-strike-step ${mobileStrikes >= 5 ? 'mobile-strike-step-active' : ''}`} />
-                        </div>
-                        
-                        <Text style={{ fontSize: '11.5px', color: '#64748b', display: 'block', marginTop: 12 }}>
-                          🚨 Reaching 5 strikes suspends all seat booking check-ins immediately.
-                        </Text>
-                      </div>
-
-                      {/* NFC Quick Action Simulator */}
-                      <div className="mobile-app-card" style={{ padding: 20, textAlign: 'center' }}>
-                        <div style={{
-                          width: 64,
-                          height: 64,
-                          borderRadius: 32,
-                          backgroundColor: '#e6f4ff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto 12px auto'
-                        }}>
-                          <ScanOutlined style={{ fontSize: '28px', color: '#1677ff' }} />
-                        </div>
-                        <Text strong style={{ display: 'block', fontSize: '15px', color: '#1e293b', marginBottom: 4 }}>
-                          Simulated Physical NFC Check-In
-                        </Text>
-                        <Text style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: 16 }}>
-                          Simulate scanning the embedded RFID desk tag to claim your seat reservation.
-                        </Text>
-                        
-                        {mobileScanning ? (
-                          <div style={{ padding: '8px 0' }}>
-                            <ActivityIndicator size="small" color="#1677ff" />
-                            <Text style={{ fontSize: '12px', color: '#1677ff', display: 'block', marginTop: 4 }}>
-                              Searching NFC reader... Hold close
-                            </Text>
-                          </div>
-                        ) : (
-                          <Button
-                            type="primary"
-                            block
-                            onClick={handleMobileNfcCheckin}
-                            disabled={mobileBookingState === 'CheckedIn' || mobileStrikes >= 5}
-                            style={{ borderRadius: 8, height: 38, fontSize: '13px' }}
-                          >
-                            {mobileBookingState === 'CheckedIn' ? '✓ Verified Checked In' : '📱 Sim NFC Check-In Scan'}
-                          </Button>
-                        )}
-                      </div>
-
-                      {/* Announcements list */}
-                      <div className="mobile-app-card" style={{ padding: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <span style={{ fontWeight: 700, fontSize: '13px' }}>📢 UTM Library Announcements</span>
-                          <Button size="small" type="text" onClick={() => setShowAnnouncements(true)} style={{ fontSize: '11px', padding: 0 }}>
-                            View All
-                          </Button>
-                        </div>
-                        <div style={{ background: '#f8fafc', padding: 10, borderRadius: 8, fontSize: '12px' }}>
-                          <Text strong style={{ display: 'block', color: '#1e293b' }}>
-                            Exam Study Period Extension
-                          </Text>
-                          <Text style={{ color: '#64748b', fontSize: '11px', display: 'block', marginTop: 2 }}>
-                            Level 2 is open 24/7 until June 15th. Refreshments allowed.
-                          </Text>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Active Booking & Timer Screen */}
-                  {mobileActiveTab === 'booking' && (
-                    <div className="fade-in-view">
-                      <div className="mobile-app-card">
-                        <div className="mobile-app-card-title">
-                          <BookOutlined style={{ color: '#1677ff' }} />
-                          <span>Session Workflow Journey</span>
-                        </div>
-
-                        {/* Steps workflow progress */}
-                        <div style={{ padding: '8px 0 16px 0' }}>
-                          <MobileSteps
-                            current={mobileBookingState === 'CheckedIn' ? 1 : 0}
-                            style={{
-                              '--title-font-size': '12.5px',
-                              '--description-font-size': '11px'
-                            }}
-                          >
-                            <MobileSteps.Step title="Seat Reserved" description="Assigned L2-S04" />
-                            <MobileSteps.Step title="Checked In" description="NFC Verified" />
-                            <MobileSteps.Step title="Vacated" description="Seat Vacated" />
-                          </MobileSteps>
-                        </div>
-                      </div>
-
-                      {/* Countdown Timer Block */}
-                      <div className="mobile-app-card" style={{ textAlign: 'center' }}>
-                        <Text strong style={{ fontSize: '14px', color: '#475569', display: 'block' }}>
-                          Session Check-Out Countdown
-                        </Text>
-                        <Text style={{ fontSize: '12px', color: '#64748b', display: 'block', marginTop: 2 }}>
-                          {mobileBookingState === 'CheckedIn'
-                            ? 'Ongoing check-out timer. Release early when leaving.'
-                            : 'NFC verification pending. Tap NFC to initialize.'}
-                        </Text>
-
-                        {/* Visual Timer Circle */}
-                        <div className="mobile-timer-circle" style={{ borderTopColor: mobileBookingState === 'CheckedIn' ? '#ff4d4f' : '#cbd5e1' }}>
-                          <span className="mobile-timer-number">
-                            {mobileBookingState === 'CheckedIn' ? getMobileTimerString() : '05:00'}
-                          </span>
-                          <span style={{ fontSize: '9px', color: '#64748b', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                            {mobileBookingState === 'CheckedIn' ? 'Time Remaining' : 'Pending NFC'}
-                          </span>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, background: '#f8fafc', padding: 8, borderRadius: 8, marginBottom: 16, fontSize: '12px' }}>
-                          <div>
-                            <span style={{ color: '#64748b', display: 'block', fontSize: '10px' }}>Desk Seat</span>
-                            <Text strong>L2-S04</Text>
-                          </div>
-                          <Divider type="vertical" style={{ height: 'auto' }} />
-                          <div>
-                            <span style={{ color: '#64748b', display: 'block', fontSize: '10px' }}>Level Area</span>
-                            <Text strong>Level 2</Text>
-                          </div>
-                        </div>
-
-                        {/* Early Vacate Trigger */}
-                        <Button
-                          danger
-                          block
-                          onClick={handleMobileCheckOut}
-                          disabled={mobileBookingState !== 'CheckedIn'}
-                          style={{
-                            borderRadius: 8,
-                            height: 38,
-                            fontSize: '13px',
-                            fontWeight: 600
-                          }}
-                        >
-                          Manual Early Check-Out
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Booking History Screen */}
-                  {mobileActiveTab === 'history' && (
-                    <div className="fade-in-view">
-                      <Title level={5} style={{ fontSize: '14px', marginBottom: 12, fontWeight: 700 }}>
-                        Past Booking Operations
-                      </Title>
-                      
-                      {/* Past List details using AntD Mobile styled Card list */}
-                      <div className="mobile-app-card" style={{ padding: 12, marginBottom: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <Text strong style={{ fontSize: '13.5px', color: '#1e293b' }}>Seat L2-S04</Text>
-                            <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: 2 }}>
-                              Level 2 Quiet Zone • 10:00 - 12:00
-                            </span>
-                          </div>
-                          <Tag color="success" style={{ fontSize: '10px', borderRadius: 4 }}>CompletedTag</Tag>
-                        </div>
-                        <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 8, display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
-                          <span>Date: May 25, 2026</span>
-                          <span>NFC Verified</span>
-                        </div>
-                      </div>
-
-                      <div className="mobile-app-card" style={{ padding: 12, marginBottom: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <Text strong style={{ fontSize: '13.5px', color: '#1e293b' }}>Seat L1-S03</Text>
-                            <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: 2 }}>
-                              Level 1 Collaborative • 14:00 - 15:00
-                            </span>
-                          </div>
-                          <Tag color="danger" style={{ fontSize: '10px', borderRadius: 4 }}>ExpiredTag</Tag>
-                        </div>
-                        <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 8, display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
-                          <span>Date: May 24, 2026</span>
-                          <span style={{ color: '#ff4d4f' }}>+1 Strike Issued</span>
-                        </div>
-                      </div>
-
-                      <div className="mobile-app-card" style={{ padding: 12, marginBottom: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <Text strong style={{ fontSize: '13.5px', color: '#1e293b' }}>Seat GF-S02</Text>
-                            <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginTop: 2 }}>
-                              Ground Floor VR Hub • 09:00 - 11:00
-                            </span>
-                          </div>
-                          <Tag color="default" style={{ fontSize: '10px', borderRadius: 4 }}>CancelledTag</Tag>
-                        </div>
-                        <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 8, display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
-                          <span>Date: May 22, 2026</span>
-                          <span>Released Early</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-
-                {/* Bottom navigation mock wrapper */}
-                <div className="smartphone-tabbar">
-                  <div
-                    className={`smartphone-tab-item ${mobileActiveTab === 'home' ? 'smartphone-tab-item-active' : ''}`}
-                    onClick={() => setMobileActiveTab('home')}
-                  >
-                    <HomeOutlined style={{ fontSize: '20px' }} />
-                    <span className="smartphone-tab-label">Home</span>
-                  </div>
-                  
-                  <div
-                    className={`smartphone-tab-item ${mobileActiveTab === 'booking' ? 'smartphone-tab-item-active' : ''}`}
-                    onClick={() => setMobileActiveTab('booking')}
-                  >
-                    <BookOutlined style={{ fontSize: '20px' }} />
-                    <span className="smartphone-tab-label">Session</span>
-                  </div>
-
-                  <div
-                    className={`smartphone-tab-item ${mobileActiveTab === 'history' ? 'smartphone-tab-item-active' : ''}`}
-                    onClick={() => setMobileActiveTab('history')}
-                  >
-                    <HistoryOutlined style={{ fontSize: '20px' }} />
-                    <span className="smartphone-tab-label">History</span>
-                  </div>
-                </div>
-
-                {/* iPhone visual home bottom bar mock */}
-                <div className="smartphone-home-indicator" />
-              </div>
-            </div>
-          </Col>
-        </Row>
-
-        {/* Modal announcement inside phone preview */}
-        <Modal
-          title="📢 UTM Library Announcements"
-          visible={showAnnouncements}
-          onCancel={() => setShowAnnouncements(false)}
-          footer={<Button onClick={() => setShowAnnouncements(false)} type="primary" block>Close</Button>}
-        >
-          <List
-            size="small"
-            dataSource={[
-              { title: 'Exam Season Extension', text: 'Level 2 is open 24/7 with active security.' },
-              { title: 'Air Conditioning Maintenance', text: 'Postgraduate lounge AC service scheduled May 28th.' },
-              { title: 'New VR Zone Rules', text: 'VR booths can now be booked for up to 3 consecutive hours.' }
-            ]}
-            renderItem={item => (
-              <List.Item>
-                <Text strong>{item.title}</Text>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#64748b' }}>{item.text}</p>
-              </List.Item>
-            )}
-          />
-        </Modal>
-      </div>
-    );
-  };
-
-  // --- RENDERING ADMIN SUB-VIEWS ---
+  // --- SUB-VIEWS RENDERING ---
 
   // 1. Dashboard Overview View
   const renderDashboardOverview = () => {
@@ -753,7 +383,7 @@ export default function App() {
         {/* Statistics Widgets */}
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="premium-card" styles={{ body: { padding: 20 } }}>
+            <Card className="premium-card" bodyStyle={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div className="stats-label">SEAT OCCUPANCY</div>
@@ -767,7 +397,7 @@ export default function App() {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="premium-card" styles={{ body: { padding: 20 } }}>
+            <Card className="premium-card" bodyStyle={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div className="stats-label">ACTIVE BLACKLISTS</div>
@@ -781,7 +411,7 @@ export default function App() {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="premium-card" styles={{ body: { padding: 20 } }}>
+            <Card className="premium-card" bodyStyle={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div className="stats-label">UNRESOLVED COMPLAINTS</div>
@@ -795,7 +425,7 @@ export default function App() {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="premium-card" styles={{ body: { padding: 20 } }}>
+            <Card className="premium-card" bodyStyle={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div className="stats-label">LOST & FOUND</div>
@@ -811,9 +441,11 @@ export default function App() {
         </Row>
 
         <Row gutter={[24, 24]}>
+          {/* SVG Hourly Traffic Line Chart */}
           <Col xs={24} lg={16}>
             <Card title={<Space><AreaChartOutlined style={{ color: '#1677ff' }} /><span>Seat Booking Trends (Hourly)</span></Space>} className="premium-card" style={{ height: '100%' }}>
               <div style={{ padding: '10px 0', height: 260, position: 'relative' }}>
+                {/* SVG Curve Chart */}
                 <svg viewBox="0 0 500 200" width="100%" height="100%" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
@@ -821,12 +453,20 @@ export default function App() {
                       <stop offset="100%" stopColor="#1677ff" stopOpacity="0.0" />
                     </linearGradient>
                   </defs>
+                  
+                  {/* Grid Lines */}
                   <line x1="0" y1="40" x2="500" y2="40" stroke="#f1f5f9" strokeWidth="1" />
                   <line x1="0" y1="80" x2="500" y2="80" stroke="#f1f5f9" strokeWidth="1" />
                   <line x1="0" y1="120" x2="500" y2="120" stroke="#f1f5f9" strokeWidth="1" />
                   <line x1="0" y1="160" x2="500" y2="160" stroke="#f1f5f9" strokeWidth="1" />
+                  
+                  {/* Highlight area under curve */}
                   <path d="M 0 160 Q 75 80, 150 95 T 300 45 T 450 60 L 500 70 L 500 180 L 0 180 Z" fill="url(#chartGrad)" />
+                  
+                  {/* Main Line curve */}
                   <path d="M 0 160 Q 75 80, 150 95 T 300 45 T 450 60 L 500 70" fill="none" stroke="#1677ff" strokeWidth="3" />
+                  
+                  {/* Data Points */}
                   <circle cx="75" cy="120" r="5" fill="#1677ff" stroke="#ffffff" strokeWidth="2" />
                   <circle cx="150" cy="95" r="5" fill="#1677ff" stroke="#ffffff" strokeWidth="2" />
                   <circle cx="225" cy="65" r="5" fill="#1677ff" stroke="#ffffff" strokeWidth="2" />
@@ -834,6 +474,8 @@ export default function App() {
                   <circle cx="375" cy="55" r="5" fill="#1677ff" stroke="#ffffff" strokeWidth="2" />
                   <circle cx="450" cy="60" r="5" fill="#1677ff" stroke="#ffffff" strokeWidth="2" />
                 </svg>
+                
+                {/* Labels */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px 0', fontSize: '11px', color: '#64748b' }}>
                   <span>08:00 AM</span>
                   <span>10:00 AM</span>
@@ -851,6 +493,7 @@ export default function App() {
             </Card>
           </Col>
 
+          {/* Recent Operations Log */}
           <Col xs={24} lg={8}>
             <Card title={<Space><FieldTimeOutlined style={{ color: '#1677ff' }} /><span>Recent Activity Logs</span></Space>} className="premium-card" style={{ height: '100%' }}>
               <List
@@ -875,11 +518,13 @@ export default function App() {
 
   // 2. Seat & Area Management View
   const renderSeatAreaManagement = () => {
+    // Filter seats based on selected area
     const filteredSeats = seatAreaFilter === 'All'
       ? seats
       : seats.filter(s => s.area === seatAreaFilter);
 
-    const areasList = ['All', 'Level 1: Collaborative Zone', 'Level 2: Quiet Study Area', 'Level 3: Postgraduate Hub'];
+    // List of distinct areas
+    const areasList = ['All', 'Level 1: Collaborative Zone', 'Level 2: Quiet Study Area', 'Level 3: Postgraduate Hub', 'Ground Floor: Multimedia Room'];
 
     return (
       <div className="fade-in-view">
@@ -903,6 +548,7 @@ export default function App() {
           </Row>
         </Card>
 
+        {/* Display areas with their corresponding seats */}
         {areasList.filter(a => a !== 'All' && (seatAreaFilter === 'All' || seatAreaFilter === a)).map(areaName => {
           const areaSeats = seats.filter(s => s.area === areaName);
           const occupiedCount = areaSeats.filter(s => s.status === 'Booked').length;
@@ -931,14 +577,14 @@ export default function App() {
                   <Col xs={24} sm={12} md={8} lg={6} key={seat.id}>
                     <Card
                       size="small"
-                      variant="outlined"
+                      bordered
                       style={{
                         borderRadius: '8px',
                         border: '1px solid #e2e8f0',
                         backgroundColor: seat.status === 'Booked' ? '#fffdf9' : '#fafcfc',
                         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.03)'
                       }}
-                      styles={{ body: { padding: 12 } }}
+                      bodyStyle={{ padding: 12 }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                         <Text strong style={{ fontSize: '15px' }}>{seat.id}</Text>
@@ -991,38 +637,54 @@ export default function App() {
 
   // 3. Student Blacklist View
   const renderStudentBlacklist = () => {
+    // Columns for Blacklist Table
     const blacklistColumns = [
       {
         title: 'Student ID',
         dataIndex: 'studentId',
         key: 'studentId',
+        sorter: (a, b) => a.studentId.localeCompare(b.studentId),
         render: (text) => <Text strong style={{ color: '#0f172a' }}>{text}</Text>
       },
       {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
+        sorter: (a, b) => a.name.localeCompare(b.name),
         render: (text) => <Text style={{ fontWeight: 500 }}>{text}</Text>
       },
       {
         title: 'Strike Count',
         dataIndex: 'strikes',
         key: 'strikes',
-        render: (strikes) => (
-          <Space>
-            <Badge count={strikes} style={{ backgroundColor: strikes >= 3 ? '#ff4d4f' : strikes === 2 ? '#fa8c16' : '#52c41a' }} />
-            <span style={{ fontSize: '12px', color: '#64748b' }}>/ 3 Strikes</span>
-          </Space>
-        )
+        sorter: (a, b) => a.strikes - b.strikes,
+        render: (strikes) => {
+          let color = 'green';
+          if (strikes === 1) color = 'blue';
+          if (strikes === 2) color = 'orange';
+          if (strikes >= 3) color = 'red';
+          
+          return (
+            <Space>
+              <Badge count={strikes} style={{ backgroundColor: strikes >= 3 ? '#ff4d4f' : strikes === 2 ? '#fa8c16' : strikes === 1 ? '#1677ff' : '#52c41a' }} />
+              <span style={{ fontSize: '12px', color: '#64748b' }}>/ 3 Strikes</span>
+            </Space>
+          );
+        }
       },
       {
         title: 'Disciplinary Status',
         dataIndex: 'status',
         key: 'status',
+        filters: [
+          { text: 'Active (Permitted)', value: 'Active' },
+          { text: 'Blacklisted (Banned)', value: 'Blacklisted' }
+        ],
+        onFilter: (value, record) => record.status === value,
         render: (status) => {
           const isBanned = status === 'Blacklisted';
           return (
-            <Tag color={isBanned ? 'red' : 'green'} style={{ fontWeight: 600 }}>
+            <Tag color={isBanned ? 'red' : 'green'} style={{ fontWeight: 600, padding: '2px 8px', borderRadius: '4px' }}>
               {isBanned ? '⛔ Blacklisted' : '✅ Active'}
             </Tag>
           );
@@ -1033,11 +695,25 @@ export default function App() {
         key: 'actions',
         render: (_, record) => (
           <Space size="middle">
-            <Button type="link" size="small" icon={<ReloadOutlined />} onClick={() => handleResetStrikes(record.key)} disabled={record.strikes === 0}>
+            <Button
+              type="link"
+              size="small"
+              icon={<ReloadOutlined />}
+              onClick={() => handleResetStrikes(record.key)}
+              disabled={record.strikes === 0}
+              style={{ padding: 0 }}
+            >
               Reset Strikes
             </Button>
             <Divider type="vertical" />
-            <Button type="link" size="small" danger icon={<CloseCircleOutlined />} onClick={() => handleRemoveBlacklist(record.key)}>
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<CloseCircleOutlined />}
+              onClick={() => handleRemoveBlacklist(record.key)}
+              style={{ padding: 0 }}
+            >
               Remove
             </Button>
           </Space>
@@ -1045,6 +721,7 @@ export default function App() {
       }
     ];
 
+    // Filter blacklist records based on search query
     const filteredBlacklist = blacklist.filter(student =>
       student.name.toLowerCase().includes(blacklistSearch.toLowerCase()) ||
       student.studentId.toLowerCase().includes(blacklistSearch.toLowerCase())
@@ -1056,19 +733,23 @@ export default function App() {
           <Row justify="space-between" align="middle" gutter={[16, 16]}>
             <Col xs={24} md={12}>
               <Title level={4} style={{ margin: 0 }}>🚨 Disciplinary List & Blacklist</Title>
-              <Text type="secondary">Students with three strikes are automatically blacklisted.</Text>
+              <Text type="secondary">Students with three strikes are automatically blacklisted and blocked from NFC seat check-ins.</Text>
             </Col>
             <Col xs={24} md={12} style={{ textAlign: screens.md ? 'right' : 'left' }}>
               <Space wrap style={{ width: '100%', justifyContent: screens.md ? 'flex-end' : 'flex-start' }}>
                 <Input
-                  placeholder="Search Student..."
+                  placeholder="Search Student Name / ID..."
                   prefix={<SearchOutlined style={{ color: '#cbd5e1' }} />}
                   value={blacklistSearch}
                   onChange={(e) => setBlacklistSearch(e.target.value)}
                   style={{ width: 220 }}
                   allowClear
                 />
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsBlacklistModalVisible(true)}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsBlacklistModalVisible(true)}
+                >
                   Record Strike / Ban
                 </Button>
               </Space>
@@ -1076,13 +757,19 @@ export default function App() {
           </Row>
         </Card>
 
-        <Card className="premium-card" styles={{ body: { padding: 0 } }}>
-          <Table columns={blacklistColumns} dataSource={filteredBlacklist} pagination={{ pageSize: 8 }} scroll={{ x: true }} />
+        <Card className="premium-card" bodyStyle={{ padding: 0 }}>
+          <Table
+            columns={blacklistColumns}
+            dataSource={filteredBlacklist}
+            pagination={{ pageSize: 8 }}
+            scroll={{ x: true }}
+          />
         </Card>
 
+        {/* Modal to Add Student Strike */}
         <Modal
-          title="🚨 Record Disciplinary Strike"
-          open={isBlacklistModalVisible}
+          title="🚨 Record Disciplinary Strike / Ban Student"
+          visible={isBlacklistModalVisible}
           onCancel={() => {
             setIsBlacklistModalVisible(false);
             blacklistForm.resetFields();
@@ -1090,26 +777,51 @@ export default function App() {
           footer={null}
           destroyOnClose
         >
-          <Form form={blacklistForm} layout="vertical" onFinish={handleAddBlacklist} initialValues={{ strikes: 1 }}>
-            <Form.Item name="studentId" label="UTM Student ID" rules={[{ required: true }]}>
+          <Form
+            form={blacklistForm}
+            layout="vertical"
+            onFinish={handleAddBlacklist}
+            initialValues={{ strikes: 1 }}
+          >
+            <Form.Item
+              name="studentId"
+              label="UTM Student ID"
+              rules={[
+                { required: true, message: 'Please input UTM Student ID!' },
+                { pattern: /^[AB]\d{2}[A-Z]{2}\d{4}$/i, message: 'Invalid ID Format. Example: A22CS0148' }
+              ]}
+            >
               <Input placeholder="e.g. A22CS0148" />
             </Form.Item>
-            <Form.Item name="name" label="Student Name" rules={[{ required: true }]}>
-              <Input placeholder="Full Name" />
+
+            <Form.Item
+              name="name"
+              label="Student Name"
+              rules={[{ required: true, message: 'Please input student name!' }]}
+            >
+              <Input placeholder="Full Name as in Matrix Card" />
             </Form.Item>
-            <Form.Item name="strikes" label="Strikes to Assign" rules={[{ required: true }]}>
+
+            <Form.Item
+              name="strikes"
+              label="Disciplinary Strikes to Assign"
+              rules={[{ required: true, message: 'Please assign strike count!' }]}
+            >
               <Select
                 options={[
-                  { value: 1, label: '1 Strike' },
-                  { value: 2, label: '2 Strikes' },
-                  { value: 3, label: '3 Strikes (Blacklist)' }
+                  { value: 1, label: '1 Strike (First Warning)' },
+                  { value: 2, label: '2 Strikes (Final Warning)' },
+                  { value: 3, label: '3 Strikes (Immediate Suspension & Blacklist)' }
                 ]}
               />
             </Form.Item>
+
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
               <Space>
                 <Button onClick={() => setIsBlacklistModalVisible(false)}>Cancel</Button>
-                <Button type="primary" danger htmlType="submit">Apply Strike</Button>
+                <Button type="primary" danger htmlType="submit">
+                  Apply Strike
+                </Button>
               </Space>
             </Form.Item>
           </Form>
@@ -1120,6 +832,7 @@ export default function App() {
 
   // 4. Complaints View
   const renderComplaints = () => {
+    // Columns for Complaints Table
     const complaintsColumns = [
       {
         title: 'ID',
@@ -1153,33 +866,50 @@ export default function App() {
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
-        render: (status, record) => (
-          <Select
-            value={status}
-            onChange={(value) => handleUpdateComplaintStatus(record.key, value)}
-            style={{ width: 140 }}
-            variant="borderless"
-            options={[
-              { value: 'Pending', label: <Tag color="error">Pending</Tag> },
-              { value: 'Under Review', label: <Tag color="warning">Under Review</Tag> },
-              { value: 'Resolved', label: <Tag color="success">Resolved</Tag> }
-            ]}
-          />
-        )
+        filters: [
+          { text: 'Pending', value: 'Pending' },
+          { text: 'Under Review', value: 'Under Review' },
+          { text: 'Resolved', value: 'Resolved' }
+        ],
+        onFilter: (value, record) => record.status === value,
+        render: (status, record) => {
+          let color = 'default';
+          if (status === 'Pending') color = 'error';
+          if (status === 'Under Review') color = 'warning';
+          if (status === 'Resolved') color = 'success';
+          
+          return (
+            <Select
+              value={status}
+              onChange={(value) => handleUpdateComplaintStatus(record.key, value)}
+              style={{ width: 140 }}
+              bordered={false}
+              className={`complaint-status-select-${status}`}
+              options={[
+                { value: 'Pending', label: <Tag color="error">Pending</Tag> },
+                { value: 'Under Review', label: <Tag color="warning">Under Review</Tag> },
+                { value: 'Resolved', label: <Tag color="success">Resolved</Tag> }
+              ]}
+            />
+          );
+        }
       }
     ];
+
+    // Filter complaints based on search/status
+    const filteredComplaints = complaints;
 
     return (
       <div className="fade-in-view">
         <Card className="premium-card" style={{ marginBottom: 24 }}>
           <Title level={4} style={{ margin: 0 }}>🛠️ Facility & Seat Complaints</Title>
-          <Text type="secondary">Expand a row to read details of the issue and update comments.</Text>
+          <Text type="secondary">Expand a row to read details of the issue, update progress notes, and resolve the complaint.</Text>
         </Card>
 
-        <Card className="premium-card" styles={{ body: { padding: 0 } }}>
+        <Card className="premium-card" bodyStyle={{ padding: 0 }}>
           <Table
             columns={complaintsColumns}
-            dataSource={complaints}
+            dataSource={filteredComplaints}
             pagination={{ pageSize: 6 }}
             scroll={{ x: true }}
             expandable={{
@@ -1187,23 +917,36 @@ export default function App() {
                 <div style={{ padding: '16px 24px', backgroundColor: '#fafbfc', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
                   <Row gutter={[24, 16]}>
                     <Col xs={24} md={12}>
-                      <Text strong style={{ fontSize: '13px', color: '#475569', display: 'block', marginBottom: 4 }}>
-                        📋 Facility Issue Details:
-                      </Text>
-                      <Paragraph style={{ background: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
-                        {record.facilityDetails}
-                      </Paragraph>
+                      <div style={{ marginBottom: 12 }}>
+                        <Text strong style={{ fontSize: '13px', color: '#475569', display: 'block', marginBottom: 4 }}>
+                          📋 Facility Issue Details:
+                        </Text>
+                        <Paragraph style={{ background: '#ffffff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', margin: 0, fontSize: '13px', lineHeight: '1.5' }}>
+                          {record.facilityDetails}
+                        </Paragraph>
+                      </div>
                     </Col>
+                    
                     <Col xs={24} md={12}>
-                      <Text strong style={{ fontSize: '13px', color: '#475569', display: 'block', marginBottom: 4 }}>
-                        ✍️ Admin Comments:
-                      </Text>
-                      <Input.TextArea
-                        rows={4}
-                        placeholder="Admin tracking notes..."
-                        value={record.adminComments}
-                        onChange={(e) => handleUpdateAdminComments(record.key, e.target.value)}
-                      />
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <Text strong style={{ fontSize: '13px', color: '#475569' }}>
+                            ✍️ Admin Resolution Comments:
+                          </Text>
+                          <span style={{ fontSize: '11px', color: '#52c41a' }}>💾 Auto-saves in real-time</span>
+                        </div>
+                        <Input.TextArea
+                          rows={4}
+                          placeholder="Type internal tracking notes, estimated resolution date, or technician details..."
+                          value={record.adminComments}
+                          onChange={(e) => handleUpdateAdminComments(record.key, e.target.value)}
+                          style={{
+                            borderRadius: '8px',
+                            border: '1px solid #cbd5e1',
+                            fontSize: '13px'
+                          }}
+                        />
+                      </div>
                     </Col>
                   </Row>
                 </div>
@@ -1218,6 +961,7 @@ export default function App() {
 
   // 5. Lost & Found View
   const renderLostFound = () => {
+    // Catalog item cards
     const filteredLost = lostFoundFilter === 'All'
       ? lostFound
       : lostFound.filter(item => item.status === lostFoundFilter);
@@ -1228,10 +972,11 @@ export default function App() {
           <Row justify="space-between" align="middle" gutter={[16, 16]}>
             <Col xs={24} md={12}>
               <Title level={4} style={{ margin: 0 }}>📦 Lost & Found Custody</Title>
-              <Text type="secondary">Manage mislaid student assets.</Text>
+              <Text type="secondary">Manage items misplaced in library study areas. Mark as claimed once students verify ownership.</Text>
             </Col>
             <Col xs={24} md={12} style={{ textAlign: screens.md ? 'right' : 'left' }}>
               <Space wrap style={{ width: '100%', justifyContent: screens.md ? 'flex-end' : 'flex-start' }}>
+                <Text strong>Filter Status:</Text>
                 <Select
                   value={lostFoundFilter}
                   onChange={(val) => setLostFoundFilter(val)}
@@ -1242,7 +987,11 @@ export default function App() {
                     { value: 'Claimed', label: 'Claimed' }
                   ]}
                 />
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsLostFoundModalVisible(true)}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsLostFoundModalVisible(true)}
+                >
                   Record Found Item
                 </Button>
               </Space>
@@ -1250,33 +999,61 @@ export default function App() {
           </Row>
         </Card>
 
+        {/* Catalog grid */}
         <Row gutter={[20, 20]}>
           {filteredLost.map(item => {
             const isClaimed = item.status === 'Claimed';
             return (
               <Col xs={24} sm={12} lg={8} key={item.id}>
-                <Card className="premium-card" styles={{ body: { padding: 20 } }} style={{ height: '100%' }}>
+                <Card
+                  className="premium-card"
+                  bodyStyle={{ padding: 20 }}
+                  style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                     <div>
-                      <Tag color={isClaimed ? 'green' : 'purple'} style={{ marginBottom: 6 }}>{item.status}</Tag>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>Registry ID: {item.id}</div>
+                      <Tag color={isClaimed ? 'green' : 'purple'} style={{ marginBottom: 6, fontWeight: 600 }}>
+                        {item.status}
+                      </Tag>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>Item Registry ID: {item.id}</div>
+                    </div>
+                    <Avatar shape="square" size={48} style={{ backgroundColor: '#f1f5f9', color: '#1677ff' }} icon={<InboxOutlined />} />
+                  </div>
+
+                  <div style={{ flex: '1 0 auto' }}>
+                    <Title level={5} style={{ margin: '0 0 8px 0', fontSize: '16px' }}>{item.name}</Title>
+                    <Paragraph ellipsis={{ rows: 2, expandable: true, symbol: 'more' }} style={{ fontSize: '13px', color: '#475569', marginBottom: 12 }}>
+                      {item.description}
+                    </Paragraph>
+                  </div>
+
+                  <Divider style={{ margin: '12px 0' }} />
+
+                  <div style={{ fontSize: '12px', color: '#64748b', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+                      <EnvironmentOutlined style={{ marginRight: 6, fontSize: '13px' }} />
+                      <span>Found in: <b>{item.location}</b></span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <CalendarOutlined style={{ marginRight: 6, fontSize: '13px' }} />
+                      <span>Date logged: <b>{item.date}</b></span>
                     </div>
                   </div>
-                  <Title level={5} style={{ margin: '0 0 8px 0', fontSize: '16px' }}>{item.name}</Title>
-                  <Paragraph style={{ fontSize: '13px', color: '#475569', marginBottom: 12 }}>{item.description}</Paragraph>
-                  <Divider style={{ margin: '12px 0' }} />
-                  <div style={{ fontSize: '12px', color: '#64748b', marginBottom: 16 }}>
-                    <div>Found in: <b>{item.location}</b></div>
-                    <div>Date: <b>{item.date}</b></div>
-                  </div>
+
                   {isClaimed ? (
-                    <div style={{ background: '#f0fdf4', padding: '10px', borderRadius: '8px', border: '1px solid #dcfce7', fontSize: '12px' }}>
+                    <div style={{ background: '#f0fdf4', padding: '10px', borderRadius: '8px', border: '1px solid #dcfce7', fontSize: '12.5px' }}>
                       <div style={{ color: '#166534', fontWeight: 600 }}>Claimed by: {item.claimedBy}</div>
                       <div style={{ color: '#15803d', fontSize: '11px' }}>Claim Date: {item.claimDate}</div>
                     </div>
                   ) : (
-                    <Button type="primary" ghost block icon={<CheckCircleOutlined />} onClick={() => showClaimModal(item)}>
-                      Handover Item
+                    <Button
+                      type="primary"
+                      ghost
+                      block
+                      icon={<CheckCircleOutlined />}
+                      onClick={() => showClaimModal(item)}
+                    >
+                      Handover / Mark Claimed
                     </Button>
                   )}
                 </Card>
@@ -1285,57 +1062,109 @@ export default function App() {
           })}
         </Row>
 
+        {/* Modal to Register Found Item */}
         <Modal
-          title="📦 Record Found Item"
-          open={isLostFoundModalVisible}
+          title="📦 Record Found Item inside Library"
+          visible={isLostFoundModalVisible}
           onCancel={() => {
             setIsLostFoundModalVisible(false);
             lostFoundForm.resetFields();
           }}
           footer={null}
+          destroyOnClose
         >
-          <Form form={lostFoundForm} layout="vertical" onFinish={handleAddLostFound}>
-            <Form.Item name="name" label="Item Name" rules={[{ required: true }]}>
+          <Form
+            form={lostFoundForm}
+            layout="vertical"
+            onFinish={handleAddLostFound}
+          >
+            <Form.Item
+              name="name"
+              label="Item Name"
+              rules={[{ required: true, message: 'Please input item name!' }]}
+            >
               <Input placeholder="e.g. Sony WH-1000XM4 Headphones" />
             </Form.Item>
-            <Form.Item name="description" label="Visual Description" rules={[{ required: true }]}>
-              <Input.TextArea placeholder="Visual traits..." />
+
+            <Form.Item
+              name="description"
+              label="Visual Description"
+              rules={[{ required: true, message: 'Please write a brief description!' }]}
+            >
+              <Input.TextArea placeholder="e.g. Silver color, inside a black case, has a small scratch near power button." rows={3} />
             </Form.Item>
-            <Form.Item name="location" label="Location Found" rules={[{ required: true }]}>
+
+            <Form.Item
+              name="location"
+              label="Specific Library Location Found"
+              rules={[{ required: true, message: 'Please specify where it was found!' }]}
+            >
               <Select
                 options={[
-                  { value: 'Level 1: Collaborative Zone', label: 'Level 1' },
-                  { value: 'Level 2: Quiet Study Area', label: 'Level 2' },
-                  { value: 'Level 3: Postgraduate Hub', label: 'Level 3' }
+                  { value: 'Level 1: Collaborative Zone', label: 'Level 1: Collaborative Zone' },
+                  { value: 'Level 2: Quiet Study Area', label: 'Level 2: Quiet Study Area' },
+                  { value: 'Level 3: Postgraduate Hub', label: 'Level 3: Postgraduate Hub' },
+                  { value: 'Ground Floor Scanner', label: 'Ground Floor Scanner / Café' }
                 ]}
               />
             </Form.Item>
+
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
               <Space>
                 <Button onClick={() => setIsLostFoundModalVisible(false)}>Cancel</Button>
-                <Button type="primary" htmlType="submit">Register Item</Button>
+                <Button type="primary" htmlType="submit">
+                  Register Item
+                </Button>
               </Space>
             </Form.Item>
           </Form>
         </Modal>
 
+        {/* Modal for Handover Claim verification */}
         <Modal
           title="✅ Verifying Ownership Handover"
-          open={isClaimModalVisible}
+          visible={isClaimModalVisible}
           onCancel={() => {
             setIsClaimModalVisible(false);
             claimForm.resetFields();
+            setSelectedLostItem(null);
           }}
           footer={null}
+          destroyOnClose
         >
-          <Form form={claimForm} layout="vertical" onFinish={handleClaimItem}>
-            <Form.Item name="studentId" label="Claimant Student ID" rules={[{ required: true }]}>
+          {selectedLostItem && (
+            <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, marginBottom: 16, border: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: '11px', color: '#64748b' }}>Item to Handover:</div>
+              <Text strong style={{ fontSize: '14.5px' }}>{selectedLostItem.name}</Text>
+              <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#475569' }}>{selectedLostItem.description}</p>
+            </div>
+          )}
+          
+          <Form
+            form={claimForm}
+            layout="vertical"
+            onFinish={handleClaimItem}
+          >
+            <Form.Item
+              name="studentId"
+              label="UTM Student ID of Claimant"
+              rules={[
+                { required: true, message: 'Please input claimant student matrix ID!' },
+                { pattern: /^[AB]\d{2}[A-Z]{2}\d{4}$/i, message: 'Invalid ID Format. Example: A21EC0052' }
+              ]}
+            >
               <Input placeholder="e.g. A21EC0052" />
             </Form.Item>
+
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
               <Space>
-                <Button onClick={() => setIsClaimModalVisible(false)}>Cancel</Button>
-                <Button type="primary" htmlType="submit">Verify & Handover</Button>
+                <Button onClick={() => {
+                  setIsClaimModalVisible(false);
+                  setSelectedLostItem(null);
+                }}>Cancel</Button>
+                <Button type="primary" htmlType="submit">
+                  Verify & Handover Item
+                </Button>
               </Space>
             </Form.Item>
           </Form>
@@ -1360,8 +1189,6 @@ export default function App() {
         return renderComplaints();
       case '5':
         return renderLostFound();
-      case '6':
-        return renderStudentMobileApp();
       default:
         return renderDashboardOverview();
     }
@@ -1369,18 +1196,52 @@ export default function App() {
 
   const getBreadcrumbTitle = () => {
     switch (selectedKey) {
-      case '1': return 'Dashboard Overview';
-      case '2': return 'Seat & Area Management';
-      case '3': return 'Student Blacklist';
-      case '4': return 'Complaints';
-      case '5': return 'Lost & Found';
-      case '6': return 'Student Mobile App Preview';
-      default: return 'Dashboard';
+      case '1':
+        return 'Dashboard Overview';
+      case '2':
+        return 'Seat & Area Management';
+      case '3':
+        return 'Student Blacklist';
+      case '4':
+        return 'Facility & Seat Complaints';
+      case '5':
+        return 'Lost & Found Custody';
+      default:
+        return 'Dashboard';
     }
   };
 
+  const mockNotifications = [
+    { key: '1', title: 'New AC Issue reported at Level 2 Quiet Area', time: '10m ago', type: 'complaint' },
+    { key: '2', title: 'NFC Seat auto-released L1-S04 due to absence', time: '30m ago', type: 'seat' },
+    { key: '3', title: 'Found Item: Blue Hydro Flask reported at Collaborative zone', time: '1h ago', type: 'lost' }
+  ];
+
+  const notificationContent = (
+    <div style={{ width: 300 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 0 8px 0', borderBottom: '1px solid #f1f5f9', marginBottom: 8 }}>
+        <Text strong>Notifications</Text>
+        <Text type="secondary" style={{ fontSize: '11px', cursor: 'pointer' }}>Mark all read</Text>
+      </div>
+      <List
+        size="small"
+        dataSource={mockNotifications}
+        renderItem={item => (
+          <List.Item style={{ padding: '8px 0', cursor: 'pointer' }}>
+            <List.Item.Meta
+              avatar={<Badge status={item.type === 'complaint' ? 'error' : item.type === 'seat' ? 'warning' : 'processing'} />}
+              title={<span style={{ fontSize: '12px', fontWeight: 500 }}>{item.title}</span>}
+              description={<span style={{ fontSize: '10px', color: '#94a3b8' }}>{item.time}</span>}
+            />
+          </List.Item>
+        )}
+      />
+    </div>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {/* Sidebar Navigation */}
       <Sider
         collapsible
         collapsed={collapsed}
@@ -1433,13 +1294,12 @@ export default function App() {
           <Menu.Item key="5" icon={<InboxOutlined />}>
             Lost & Found
           </Menu.Item>
-          <Menu.Item key="6" icon={<MobileOutlined style={{ color: '#1677ff' }} />}>
-            Student Mobile App
-          </Menu.Item>
         </Menu>
       </Sider>
 
+      {/* Main Container */}
       <Layout>
+        {/* Main Header */}
         <Header style={{
           background: '#ffffff',
           padding: '0 24px',
@@ -1454,6 +1314,7 @@ export default function App() {
           </div>
           
           <Space size="large">
+            {/* Staff Domain Profile */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <Avatar style={{ backgroundColor: '#1677ff' }} icon={<UserOutlined />} />
               {screens.sm && (
@@ -1464,12 +1325,20 @@ export default function App() {
               )}
             </div>
 
+            {/* Notification Badge with Popover */}
+            <Popover content={notificationContent} trigger="click" placement="bottomRight">
+              <Badge count={pendingNotifications} overflowCount={9} style={{ cursor: 'pointer' }}>
+                <Button type="text" shape="circle" size="large" icon={<BellOutlined style={{ fontSize: '18px', color: '#475569' }} />} />
+              </Badge>
+            </Popover>
+
             <Tooltip title="Log Out">
-              <Button type="text" shape="circle" size="large" icon={<PoweroffOutlined style={{ fontSize: '16px', color: '#ff4d4f' }} />} onClick={() => message.info('Logging out...')} />
+              <Button type="text" shape="circle" size="large" icon={<PoweroffOutlined style={{ fontSize: '16px', color: '#ff4d4f' }} />} onClick={() => message.info('Logging out system...')} />
             </Tooltip>
           </Space>
         </Header>
 
+        {/* Main Content Area */}
         <Content style={{ padding: '24px', overflowY: 'auto' }}>
           {renderActiveView()}
         </Content>

@@ -1,0 +1,292 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #1677ff;
+  --primary-hover: #4096ff;
+  --bg-app: #f4f6f9;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #f1f5f9;
+  --transition: all 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #0f172a; /* Sleek dark environment in browser to highlight phone */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Simulated Smartphone Shell */
+.phone-shell {
+  width: 375px;
+  height: 812px;
+  background: #000000;
+  border-radius: 48px;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7),
+              0 0 0 12px #27272a, /* dark grey metal frame */
+              0 0 0 13px #3f3f46; /* metallic outer highlighting */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Notch / Dynamic Island */
+.phone-notch {
+  width: 110px;
+  height: 30px;
+  background: #000000;
+  border-radius: 20px;
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 12px;
+}
+
+.camera-lens {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: #111;
+  box-shadow: inset 0 0 2px #333;
+}
+
+.sensor-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 2.5px;
+  background: #1c1c1e;
+}
+
+/* Phone Screen Container */
+.phone-screen {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  padding-top: 47px; /* Account for custom simulated status bar */
+  padding-bottom: 24px; /* Account for home indicator spacer */
+}
+
+/* Simulated iOS Status Bar */
+.phone-status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 47px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 24px 8px;
+  z-index: 9999;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* Simulated iOS Home Indicator Spacer */
+.home-indicator-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: var(--bg-app);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.home-indicator {
+  width: 120px;
+  height: 5px;
+  background-color: #334155;
+  border-radius: 10px;
+}
+
+/* Custom UI Components styled mobile-first */
+.mobile-header-banner {
+  background: linear-gradient(135deg, #1677ff 0%, #0050b3 100%);
+  padding: 16px;
+  color: #ffffff;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.mobile-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.mobile-card-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-card-body {
+  padding: 12px;
+}
+
+.strike-scale-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.strike-node {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #e2e8f0;
+  transition: var(--transition);
+}
+
+.strike-node.active-warning {
+  background-color: #ff4d4f;
+  box-shadow: 0 0 8px rgba(255, 77, 79, 0.4);
+}
+
+.strike-node.active-caution {
+  background-color: #fa8c16;
+}
+
+/* Grid & Quick Actions */
+.mobile-grid-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.action-btn-card {
+  background: var(--bg-card);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.action-btn-card:active {
+  background: #f8fafc;
+  transform: scale(0.97);
+}
+
+/* Scroll content inside simulated screen */
+.screen-scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.screen-scroll-content::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for clean app design */
+}
+
+/* Simulated Bottom Tabbar */
+.phone-tabbar {
+  height: 60px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 999;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  flex: 1;
+  height: 100%;
+}
+
+.tab-item.active {
+  color: var(--primary-color);
+}
+
+.tab-item-icon {
+  font-size: 18px;
+  margin-bottom: 3px;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.95;
+  }
+}
+
+.nfc-tap-scanner {
+  width: 140px;
+  height: 140px;
+  border-radius: 70px;
+  background: rgba(22, 119, 255, 0.05);
+  border: 2px dashed #1677ff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+  margin: 20px auto;
+  cursor: pointer;
+  animation: pulse 2.5s infinite ease-in-out;
+}
+
+.nfc-tap-scanner.scanning {
+  border-color: #52c41a;
+  background: rgba(82, 196, 26, 0.08);
+}
