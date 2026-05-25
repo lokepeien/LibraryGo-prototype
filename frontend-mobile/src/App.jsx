@@ -29,8 +29,8 @@ import BookingHistory from './components/BookingHistory';
 const { Title, Text, Paragraph } = Typography;
 
 export default function App() {
-  // Navigation states: 'home' | 'book' | 'booking' | 'history'
-  const [activeTab, setActiveTab] = useState('home');
+  // Navigation states: 'book' | 'home' | 'booking' | 'history'
+  const [activeTab, setActiveTab] = useState('book');
 
   // UTM Student Mock Database State
   const [student, setStudent] = useState({
@@ -315,13 +315,13 @@ export default function App() {
 
         {/* Tabbar Navigation */}
         <div className="phone-tabbar">
-          <div className={`tab-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
-            <HomeOutlined className="tab-item-icon" />
-            <span>Home</span>
-          </div>
           <div className={`tab-item ${activeTab === 'book' ? 'active' : ''}`} onClick={() => setActiveTab('book')}>
             <BookOutlined className="tab-item-icon" />
             <span>Reserve</span>
+          </div>
+          <div className={`tab-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+            <HomeOutlined className="tab-item-icon" />
+            <span>Home</span>
           </div>
           <div className={`tab-item ${activeTab === 'booking' ? 'active' : ''}`} onClick={() => setActiveTab('booking')}>
             <Badge dot={activeBooking.status !== 'None'} size="small">
