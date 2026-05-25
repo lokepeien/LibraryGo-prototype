@@ -31,7 +31,8 @@ import {
   PlayCircleOutlined,
   NotificationOutlined,
   ExclamationCircleOutlined,
-  EnvironmentOutlined
+  EnvironmentOutlined,
+  BookOutlined
 } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
@@ -73,6 +74,15 @@ export default function App() {
 
   // Announcement modal state
   const [announcementsVisible, setAnnouncementsVisible] = useState(false);
+
+  // New Reservation Form State
+  const [selectedLibrary, setSelectedLibrary] = useState('Perpustakaan Sultanah Zanariah (PSZ)');
+  const [selectedArea, setSelectedArea] = useState('Level 2: Quiet Study Area');
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState('10:00 AM - 12:00 PM');
+  const [selectedDuration, setSelectedDuration] = useState('2 Hours (Max)');
+  
+  // Confirmation Modal
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
 
   // Timer runner
   useEffect(() => {
@@ -193,6 +203,41 @@ export default function App() {
     });
     setActiveTab('booking');
     message.info('🎟️ Seat L2-S04 reserved! Scan physical NFC Tag within 5 minutes.');
+  };
+
+  const handleConfirmReservation = () => {
+    if (student.strikes >= 5) {
+      message.error('⛔ Booking Suspended: You have reached the maximum limit of 5 strikes.');
+      setConfirmationVisible(false);
+      return;
+    }
+
+    // Determine seat based on area selection
+    let seat = 'L2-S04';
+    let nfc = '04:E3:4C:6A:B2:1A:80';
+    if (selectedArea.includes('Level 1')) {
+      seat = 'L1-S02';
+      nfc = '04:5C:8B:1A:F5:2C:81';
+    } else if (selectedArea.includes('Level 3')) {
+      seat = 'L3-S02';
+      nfc = '04:AB:CD:EF:01:23:45';
+    } else if (selectedArea.includes('Ground')) {
+      seat = 'GF-S03';
+      nfc = '04:11:22:33:44:55:66';
+    }
+
+    setActiveBooking({
+      seatId: seat,
+      areaName: selectedArea,
+      nfcUid: nfc,
+      status: 'Reserved',
+      timeRemaining: 300, // 5-minute grace period to check-in (300 seconds)
+      timerRunning: true
+    });
+
+    setConfirmationVisible(false);
+    setActiveTab('booking');
+    message.success(`🎟️ Reserved Seat ${seat}! Review parameters and scan NFC tag.`);
   };
 
   const formatTimer = (secs) => {
@@ -526,10 +571,167 @@ export default function App() {
     );
   };
 
+  // Screen 4: Reserve a Seat View
+  const renderReserveSeatView = () => {
+    const isBanned = student.strikes >= 5;
+    
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="fade-in-view">
+        <Card className="mobile-card" bodyStyle={{ padding: 12 }}>
+          <Title level={5} style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#1e293b' }}>
+            🎟️ Seat Booking & Reservation
+          </Title>
+          <Text type="secondary" style={{ fontSize: '11px' }}>
+            Select library branches, area zones, and session slots to secure your study space.
+          </Text>
+        </Card>
+
+        {/* Library selection Form */}
+        <Card className="mobile-card" bodyStyle={{ padding: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            
+            {/* Library Selector */}
+            <div>
+              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                🏦 Select Library Branch:
+              </Text>
+              <Select
+                value={selectedLibrary}
+                onChange={(val) => setSelectedLibrary(val)}
+                style={{ width: '100%' }}
+                options={[
+                  { value: 'Perpustakaan Sultanah Zanariah (PSZ)', label: 'Perpustakaan Sultanah Zanariah (PSZ)' },
+                  { value: 'Perpustakaan Raja Zarith Sofiah (PRZS)', label: 'Perpustakaan Raja Zarith Sofiah (PRZS)' }
+                ]}
+              />
+            </div>
+
+            {/* Area Zone Selector */}
+            <div>
+              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                📍 Select Library Area Zone:
+              </Text>
+              <Select
+                value={selectedArea}
+                onChange={(val) => setSelectedArea(val)}
+                style={{ width: '100%' }}
+                options={[
+                  { value: 'Level 1: Collaborative Zone', label: 'Level 1: Collaborative Zone' },
+                  { value: 'Level 2: Quiet Study Area', label: 'Level 2: Quiet Study Area' },
+                  { value: 'Level 3: Postgraduate Hub', label: 'Level 3: Postgraduate Hub' },
+                  { value: 'Ground Floor: Multimedia Room', label: 'Ground Floor: Multimedia Room' }
+                ]}
+              />
+            </div>
+
+            {/* Time Slot Selector */}
+            <div>
+              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                ⏰ Select Time Slot:
+              </Text>
+              <Select
+                value={selectedTimeSlot}
+                onChange={(val) => setSelectedTimeSlot(val)}
+                style={{ width: '100%' }}
+                options={[
+                  { value: '08:00 AM - 10:00 AM', label: '08:00 AM - 10:00 AM' },
+                  { value: '10:00 AM - 12:00 PM', label: '10:00 AM - 12:00 PM' },
+                  { value: '12:00 PM - 02:00 PM', label: '12:00 PM - 02:00 PM' },
+                  { value: '02:00 PM - 04:00 PM', label: '02:00 PM - 04:00 PM' },
+                  { value: '04:00 PM - 06:00 PM', label: '04:00 PM - 06:00 PM' },
+                  { value: '06:00 PM - 08:00 PM', label: '06:00 PM - 08:00 PM' }
+                ]}
+              />
+            </div>
+
+            {/* Session Duration Selector */}
+            <div>
+              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                ⏳ Session Duration:
+              </Text>
+              <Select
+                value={selectedDuration}
+                onChange={(val) => setSelectedDuration(val)}
+                style={{ width: '100%' }}
+                options={[
+                  { value: '30 Minutes', label: '30 Minutes' },
+                  { value: '1 Hour', label: '1 Hour' },
+                  { value: '2 Hours (Max)', label: '2 Hours (Max)' }
+                ]}
+              />
+            </div>
+
+            {/* Book Seat Trigger Button */}
+            <Button
+              type="primary"
+              size="large"
+              block
+              style={{ marginTop: 8 }}
+              disabled={isBanned}
+              onClick={() => setConfirmationVisible(true)}
+            >
+              Book Seat
+            </Button>
+            
+            {isBanned && (
+              <span style={{ color: '#ff4d4f', fontSize: '10.5px', textAlign: 'center', display: 'block' }}>
+                ⛔ Cannot book new seats while privileges are suspended!
+              </span>
+            )}
+          </div>
+        </Card>
+
+        {/* Modal to display selected booking parameters */}
+        <Modal
+          title={<span style={{ fontWeight: 700 }}>🎉 Booking Parameters Review</span>}
+          visible={confirmationVisible}
+          onCancel={() => setConfirmationVisible(false)}
+          footer={[
+            <Button key="back" onClick={() => setConfirmationVisible(false)}>
+              Cancel
+            </Button>,
+            <Button key="submit" type="primary" onClick={handleConfirmReservation}>
+              Confirm & Start
+            </Button>
+          ]}
+          width={310}
+          centered
+        >
+          <div style={{ padding: '8px 0' }}>
+            <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginBottom: 12 }}>
+              Please review the seat reservation details below:
+            </Text>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+              <div>
+                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>SELECTED LIBRARY:</span>
+                <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedLibrary}</Text>
+              </div>
+              <div>
+                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>AREA ZONE:</span>
+                <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedArea}</Text>
+              </div>
+              <div>
+                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>TIME SLOT:</span>
+                <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedTimeSlot}</Text>
+              </div>
+              <div>
+                <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>DURATION:</span>
+                <Text strong style={{ fontSize: '12.5px', color: '#1677ff' }}>{selectedDuration}</Text>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      </div>
+    );
+  };
+
   const getScreenTitle = () => {
     switch (activeTab) {
       case 'home':
         return 'LibraryGo Home';
+      case 'book':
+        return 'Reserve Seat';
       case 'booking':
         return 'Live Session';
       case 'history':
@@ -565,6 +767,7 @@ export default function App() {
         {/* Scroll content */}
         <div className="screen-scroll-content">
           {activeTab === 'home' && renderHomeDashboard()}
+          {activeTab === 'book' && renderReserveSeatView()}
           {activeTab === 'booking' && renderActiveBooking()}
           {activeTab === 'history' && renderBookingHistory()}
         </div>
@@ -574,6 +777,10 @@ export default function App() {
           <div className={`tab-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
             <HomeOutlined className="tab-item-icon" />
             <span>Home</span>
+          </div>
+          <div className={`tab-item ${activeTab === 'book' ? 'active' : ''}`} onClick={() => setActiveTab('book')}>
+            <BookOutlined className="tab-item-icon" />
+            <span>Reserve</span>
           </div>
           <div className={`tab-item ${activeTab === 'booking' ? 'active' : ''}`} onClick={() => setActiveTab('booking')}>
             <Badge dot={activeBooking.status !== 'None'} size="small">
