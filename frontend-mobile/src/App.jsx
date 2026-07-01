@@ -40,7 +40,7 @@ export default function App() {
   const [student, setStudent] = useState({
     name: 'Pei En',
     matrixId: 'A22CS0148',
-    domain: 'Student Domain: @utm.my',
+    domain: 'lokeen@graduate.utm.my',
     strikes: 2, // starting with 2 strikes
     role: 'Student' // 'Student' | 'Admin'
   });
@@ -143,7 +143,7 @@ export default function App() {
       const isAdmin = prev.role === 'Admin';
       message.success(isAdmin ? '🎓 Logged back in as Student.' : '🔑 Logged out. Signed in as Admin.');
       return isAdmin
-        ? { ...prev, name: 'Pei En', matrixId: 'A22CS0148', domain: 'Student Domain: @utm.my', role: 'Student' }
+        ? { ...prev, name: 'Pei En', matrixId: 'A22CS0148', domain: 'lokeen@graduate.utm.my', role: 'Student' }
         : { ...prev, name: 'Admin Staff', matrixId: 'STAFF-0001', domain: 'Staff Domain: @utm.my', role: 'Admin' };
     });
   };

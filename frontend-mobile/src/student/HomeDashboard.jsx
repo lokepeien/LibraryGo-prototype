@@ -94,7 +94,7 @@ export default function HomeDashboard({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <Space align="center" size={6}>
-              <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: '11px', fontWeight: 600 }}>UTM SEAT COMPANION</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: '11px', fontWeight: 600 }}>LibraryGo</Text>
               <Tag color={student.role === 'Admin' ? 'gold' : 'blue'} style={{ fontSize: '9px', lineHeight: '14px', padding: '0 5px', margin: 0 }}>
                 {student.role === 'Admin' ? '🛠️ Admin' : '🎓 Student'}
               </Tag>
