@@ -820,7 +820,6 @@ export default function App() {
           borderBottom: '1px solid #e2e8f0'
         }}>
           <div>
-            <Text type="secondary" style={{ fontSize: '13px' }}>UTM Campus System</Text>
             <div style={{ fontWeight: 600, fontSize: '16px', lineHeight: 1.2 }}>{getBreadcrumbTitle()}</div>
           </div>
 
@@ -831,7 +830,7 @@ export default function App() {
               {screens.sm && (
                 <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
                   <div style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b' }}>{staffRole === 'Admin' ? 'Admin' : 'Librarian'}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b' }}>Staff Domain: @utm.my</div>
+                  <div style={{ fontSize: '11px', color: '#64748b' }}>Staff Domain: @gmail.com</div>
                 </div>
               )}
             </div>
