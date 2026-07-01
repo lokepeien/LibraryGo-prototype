@@ -144,7 +144,7 @@ export default function App() {
       message.success(isAdmin ? '🎓 Logged back in as Student.' : '🔑 Logged out. Signed in as Admin.');
       return isAdmin
         ? { ...prev, name: 'Pei En', matrixId: 'A22CS0148', domain: 'lokeen@graduate.utm.my', role: 'Student' }
-        : { ...prev, name: 'Admin Staff', matrixId: 'STAFF-0001', domain: 'Staff Domain: @utm.my', role: 'Admin' };
+        : { ...prev, name: 'Admin Staff', matrixId: 'STAFF-0001', domain: 'lokepeien9@gmail.com', role: 'Admin' };
     });
   };
 

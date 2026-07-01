@@ -26,7 +26,7 @@ function SeatPlanView({ library, area }) {
       <Text strong style={{ fontSize: '12px', color: '#1677ff', display: 'block' }}>{library}</Text>
       <Text strong style={{ fontSize: '11px', color: '#1677ff', display: 'block', marginBottom: 12 }}>{area}</Text>
 
-      <div style={{ overflowX: 'auto', borderRadius: 4, border: '1px solid #e2e8f0' }}>
+      <div style={{ overflowX: 'auto', borderRadius: 4, border: '1px solid #e2e8f0', paddingBottom: 20 }}>
         <img
           src="/images/PRZS-ARAS2.svg"
           alt="Seat Plan"
