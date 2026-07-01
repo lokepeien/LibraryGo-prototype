@@ -58,3 +58,6 @@ frontend-mobile/ios/build
 frontend-mobile/ios/Pods
 frontend-mobile/.expo/
 frontend-mobile/npm-debug.log
+
+# Ignored lockfiles
+frontend-web/package-lock.json
