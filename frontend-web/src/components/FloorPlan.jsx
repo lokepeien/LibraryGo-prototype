@@ -1,14 +1,19 @@
-import React, { useState, useRef } from 'react';
-import { Card, Row, Col, Space, Tag, Switch, Button, Upload, Typography, Modal, Input, Empty, Tooltip, message } from 'antd';
+import React, { useState } from 'react';
+import { Card, Row, Col, Space, Tag, Switch, Button, Upload, Typography, Modal, Input, Form, TimePicker, Checkbox, Popconfirm, message } from 'antd';
+import dayjs from 'dayjs';
 import {
   EnvironmentOutlined,
   UploadOutlined,
   DeleteOutlined,
-  AimOutlined,
-  CloseCircleFilled
+  SettingOutlined,
+  PlusOutlined,
+  ClockCircleOutlined
 } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
+const { RangePicker } = TimePicker;
+
+const DURATION_OPTIONS = ['30 Minutes', '1 Hour', '2 Hours (Max)'];
 
 // Reads a locally selected image file and hands the caller a data URL for preview (no backend upload)
 function readImageAsDataUrl(file, onLoaded) {
@@ -59,55 +64,63 @@ export default function FloorPlan({
   handleUploadSeatPlanImage,
   handleDeleteSeatPlanImage,
   handleToggleAreaActive,
-  handleAddSeatMarker,
-  handleRemoveSeatMarker
+  handleAddArea,
+  handleDeleteArea,
+  handleUpdateLibrarySettings
 }) {
-  const [markingArea, setMarkingArea] = useState(null);
-  const [pendingClick, setPendingClick] = useState(null);
-  const [labelInput, setLabelInput] = useState('');
-  const imageContainerRef = useRef(null);
+  const [settingsForId, setSettingsForId] = useState(null);
+  const [settingsForm] = Form.useForm();
+  const [isAddAreaModalVisible, setIsAddAreaModalVisible] = useState(false);
+  const [addAreaForm] = Form.useForm();
 
-  const markingPlan = floorPlans.find(fp => fp.area === markingArea);
+  const settingsPlan = floorPlans.find(fp => fp.id === settingsForId);
 
-  const closeMarkModal = () => {
-    setMarkingArea(null);
-    setPendingClick(null);
-    setLabelInput('');
-  };
-
-  const handleImageClick = (e) => {
-    const rect = imageContainerRef.current.getBoundingClientRect();
-    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
-    setPendingClick({ xPct, yPct });
-    setLabelInput('');
-  };
-
-  const confirmMarker = () => {
-    if (!labelInput.trim()) {
-      message.error('Please enter a seat ID for this marker.');
-      return;
-    }
-    handleAddSeatMarker(markingArea, {
-      id: `${Date.now()}`,
-      label: labelInput.trim(),
-      xPct: pendingClick.xPct,
-      yPct: pendingClick.yPct
+  const openSettings = (fp) => {
+    setSettingsForId(fp.id);
+    settingsForm.setFieldsValue({
+      area: fp.area,
+      operatingHours: [dayjs(fp.operatingHours[0], 'HH:mm'), dayjs(fp.operatingHours[1], 'HH:mm')],
+      allowedDurations: fp.allowedDurations
     });
-    setPendingClick(null);
-    setLabelInput('');
+  };
+
+  const closeSettings = () => {
+    setSettingsForId(null);
+    settingsForm.resetFields();
+  };
+
+  const saveSettings = (values) => {
+    handleUpdateLibrarySettings(settingsForId, {
+      area: values.area,
+      operatingHours: [values.operatingHours[0].format('HH:mm'), values.operatingHours[1].format('HH:mm')],
+      allowedDurations: values.allowedDurations
+    });
+    closeSettings();
+  };
+
+  const saveNewArea = (values) => {
+    handleAddArea(values.name);
+    setIsAddAreaModalVisible(false);
+    addAreaForm.resetFields();
   };
 
   return (
     <div className="fade-in-view">
       <Card className="premium-card" style={{ marginBottom: 24 }}>
-        <Title level={4} style={{ margin: 0 }}>🗺️ Floor Plan</Title>
-        <Text type="secondary">Upload and manage floor plan / seat plan images per area and level, mark seat positions, and toggle area availability for holidays or closures.</Text>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <Title level={4} style={{ margin: 0 }}>🗺️ Floor Plan</Title>
+            <Text type="secondary">Upload floor plan / seat plan images, manage library settings, and toggle area availability for holidays or closures.</Text>
+          </div>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsAddAreaModalVisible(true)}>
+            Add Area
+          </Button>
+        </div>
       </Card>
 
       {floorPlans.map(fp => (
         <Card
-          key={fp.area}
+          key={fp.id}
           title={
             <Space>
               <EnvironmentOutlined style={{ color: '#1677ff' }} />
@@ -121,8 +134,17 @@ export default function FloorPlan({
                 checked={fp.active}
                 checkedChildren="Open"
                 unCheckedChildren="Closed"
-                onChange={() => handleToggleAreaActive(fp.area)}
+                onChange={() => handleToggleAreaActive(fp.id)}
               />
+              <Popconfirm
+                title={`Delete "${fp.area}"?`}
+                description="This removes the area and its uploaded plans."
+                onConfirm={() => handleDeleteArea(fp.id)}
+                okText="Delete"
+                okButtonProps={{ danger: true }}
+              >
+                <Button size="small" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
             </Space>
           }
           className="premium-card"
@@ -134,8 +156,8 @@ export default function FloorPlan({
                 title="🏢 Floor Plan Image"
                 image={fp.floorPlanImage}
                 fileName={fp.floorPlanFileName}
-                onUpload={(dataUrl, name) => handleUploadFloorPlanImage(fp.area, dataUrl, name)}
-                onDelete={() => handleDeleteFloorPlanImage(fp.area)}
+                onUpload={(dataUrl, name) => handleUploadFloorPlanImage(fp.id, dataUrl, name)}
+                onDelete={() => handleDeleteFloorPlanImage(fp.id)}
               />
             </Col>
             <Col xs={24} md={12}>
@@ -143,114 +165,90 @@ export default function FloorPlan({
                 title="💺 Seat Plan Image"
                 image={fp.seatPlanImage}
                 fileName={fp.seatPlanFileName}
-                onUpload={(dataUrl, name) => handleUploadSeatPlanImage(fp.area, dataUrl, name)}
-                onDelete={() => handleDeleteSeatPlanImage(fp.area)}
+                onUpload={(dataUrl, name) => handleUploadSeatPlanImage(fp.id, dataUrl, name)}
+                onDelete={() => handleDeleteSeatPlanImage(fp.id)}
               />
             </Col>
           </Row>
 
           <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <Button
-              type="primary"
-              icon={<AimOutlined />}
-              disabled={!fp.seatPlanImage}
-              onClick={() => setMarkingArea(fp.area)}
-            >
-              Mark Seat Positions
+            <Button type="primary" icon={<SettingOutlined />} onClick={() => openSettings(fp)}>
+              Library Settings
             </Button>
 
             <Space wrap>
-              {fp.seatMarkers.map(marker => (
-                <Tag key={marker.id} closable onClose={() => handleRemoveSeatMarker(fp.area, marker.id)}>
-                  {marker.label}
-                </Tag>
-              ))}
-              {fp.seatMarkers.length === 0 && (
-                <Text type="secondary" style={{ fontSize: '11.5px' }}>No seats marked yet.</Text>
-              )}
+              <Tag icon={<ClockCircleOutlined />}>{fp.operatingHours[0]} – {fp.operatingHours[1]}</Tag>
+              {fp.allowedDurations.map(d => <Tag key={d} color="blue">{d}</Tag>)}
             </Space>
           </div>
         </Card>
       ))}
 
-      {/* Mark Seat Positions Modal */}
+      {/* Library Settings Modal */}
       <Modal
-        title={markingArea ? `📍 Mark Seat Positions — ${markingArea}` : ''}
-        open={!!markingArea}
-        onCancel={closeMarkModal}
-        footer={[<Button key="done" type="primary" onClick={closeMarkModal}>Done</Button>]}
-        width={640}
+        title={settingsPlan ? `⚙️ Library Settings — ${settingsPlan.area}` : ''}
+        open={!!settingsForId}
+        onCancel={closeSettings}
+        footer={null}
         destroyOnClose
       >
-        {markingPlan && markingPlan.seatPlanImage ? (
-          <>
-            <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: 10 }}>
-              Click anywhere on the plan to drop a seat marker, then enter its seat ID.
-            </Text>
-            <div
-              ref={imageContainerRef}
-              onClick={pendingClick ? undefined : handleImageClick}
-              style={{ position: 'relative', cursor: pendingClick ? 'default' : 'crosshair', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}
-            >
-              <img src={markingPlan.seatPlanImage} alt="Seat Plan" style={{ width: '100%', display: 'block' }} draggable={false} />
+        <Form form={settingsForm} layout="vertical" onFinish={saveSettings}>
+          <Form.Item
+            name="area"
+            label="Area Name"
+            rules={[{ required: true, message: 'Please enter the area name!' }]}
+          >
+            <Input placeholder="e.g. Level 1: Collaborative Zone" />
+          </Form.Item>
 
-              {markingPlan.seatMarkers.map(marker => (
-                <Tooltip key={marker.id} title={marker.label}>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: `${marker.xPct}%`,
-                      top: `${marker.yPct}%`,
-                      transform: 'translate(-50%, -50%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2
-                    }}
-                  >
-                    <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#1677ff', border: '2px solid #ffffff', boxShadow: '0 0 0 1px #1677ff' }} />
-                    <CloseCircleFilled
-                      style={{ color: '#ff4d4f', fontSize: '12px', cursor: 'pointer' }}
-                      onClick={(e) => { e.stopPropagation(); handleRemoveSeatMarker(markingArea, marker.id); }}
-                    />
-                  </div>
-                </Tooltip>
-              ))}
+          <Form.Item
+            name="operatingHours"
+            label="Operating Hours"
+            rules={[{ required: true, message: 'Please select the operating hours!' }]}
+          >
+            <RangePicker format="HH:mm" style={{ width: '100%' }} />
+          </Form.Item>
 
-              {pendingClick && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: `${pendingClick.xPct}%`,
-                    top: `${pendingClick.yPct}%`,
-                    transform: 'translate(-50%, -50%)',
-                    background: '#ffffff',
-                    border: '1px solid #1677ff',
-                    borderRadius: 8,
-                    padding: 6,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    display: 'flex',
-                    gap: 4
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Input
-                    size="small"
-                    placeholder="Seat ID"
-                    autoFocus
-                    value={labelInput}
-                    onChange={(e) => setLabelInput(e.target.value)}
-                    onPressEnter={confirmMarker}
-                    style={{ width: 100 }}
-                  />
-                  <Button size="small" type="primary" onClick={confirmMarker}>Add</Button>
-                  <Button size="small" onClick={() => setPendingClick(null)}>✕</Button>
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <Empty description="Upload a seat plan image first." />
-        )}
+          <Form.Item
+            name="allowedDurations"
+            label="Allowed Booking Durations"
+            rules={[{ required: true, message: 'Please select at least one duration!' }]}
+          >
+            <Checkbox.Group options={DURATION_OPTIONS} />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={closeSettings}>Cancel</Button>
+              <Button type="primary" htmlType="submit">Save Settings</Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Add Area Modal */}
+      <Modal
+        title="➕ Add New Area"
+        open={isAddAreaModalVisible}
+        onCancel={() => setIsAddAreaModalVisible(false)}
+        footer={null}
+        destroyOnClose
+      >
+        <Form form={addAreaForm} layout="vertical" onFinish={saveNewArea}>
+          <Form.Item
+            name="name"
+            label="Area Name"
+            rules={[{ required: true, message: 'Please enter the new area name!' }]}
+          >
+            <Input placeholder="e.g. Level 4: Rare Books Collection" />
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => setIsAddAreaModalVisible(false)}>Cancel</Button>
+              <Button type="primary" htmlType="submit">Create Area</Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

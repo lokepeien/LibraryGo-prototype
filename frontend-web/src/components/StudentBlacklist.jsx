@@ -1,6 +1,8 @@
 import React from 'react';
-import { Card, Row, Col, Space, Input, Button, Table, Tag, Badge, Divider, Modal, Form, Select, Typography } from 'antd';
-import { SearchOutlined, PlusOutlined, ReloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Space, Input, Button, Table, Tag, Badge, Divider, Modal, Form, Select, Typography, message } from 'antd';
+import { SearchOutlined, PlusOutlined, ReloadOutlined, CloseCircleOutlined, FilePdfOutlined } from '@ant-design/icons';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const { Title, Text } = Typography;
 
@@ -101,6 +103,23 @@ export default function StudentBlacklist({
     student.studentId.toLowerCase().includes(blacklistSearch.toLowerCase())
   );
 
+  const handleExportPdf = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('UTM Library — Student Disciplinary Blacklist Report', 14, 16);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
+
+    autoTable(doc, {
+      startY: 28,
+      head: [['Student ID', 'Name', 'Strike Count', 'Disciplinary Status']],
+      body: blacklist.map(s => [s.studentId, s.name, `${s.strikes} / 3`, s.status])
+    });
+
+    doc.save(`blacklist-report-${new Date().toISOString().split('T')[0]}.pdf`);
+    message.success('Blacklist report exported as PDF.');
+  };
+
   return (
     <div className="fade-in-view">
       <Card className="premium-card" style={{ marginBottom: 24 }}>
@@ -119,6 +138,12 @@ export default function StudentBlacklist({
                 style={{ width: 220 }}
                 allowClear
               />
+              <Button
+                icon={<FilePdfOutlined />}
+                onClick={handleExportPdf}
+              >
+                Export PDF
+              </Button>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -143,7 +168,7 @@ export default function StudentBlacklist({
       {/* Modal to Add Student Strike */}
       <Modal
         title="🚨 Record Disciplinary Strike / Ban Student"
-        visible={isBlacklistModalVisible}
+        open={isBlacklistModalVisible}
         onCancel={() => {
           setIsBlacklistModalVisible(false);
           blacklistForm.resetFields();

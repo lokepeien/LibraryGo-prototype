@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import dayjs from 'dayjs';
 import {
   Layout,
   Menu,
@@ -23,7 +24,8 @@ import {
   BellOutlined,
   PoweroffOutlined,
   InboxOutlined,
-  PictureOutlined
+  PictureOutlined,
+  NotificationOutlined
 } from '@ant-design/icons';
 import './App.css';
 
@@ -32,6 +34,7 @@ import DashboardOverview from './components/DashboardOverview';
 import SeatManagement from './components/SeatManagement';
 import FloorPlan from './components/FloorPlan';
 import StudentBlacklist from './components/StudentBlacklist';
+import Announcements from './components/Announcements';
 import Complaints from './components/Complaints';
 import LostFound from './components/LostFound';
 import { AREA_NAMES } from './constants/areas';
@@ -91,15 +94,52 @@ const initialSeats = [
   { id: 'GF-S04', area: 'Ground Floor: Multimedia Room', nfcUid: '04:00:11:22:33:44:55', status: 'Available', studentName: null, date: null, timeSlot: null }
 ];
 
-const initialFloorPlans = AREA_NAMES.map(area => ({
+const initialFloorPlans = AREA_NAMES.map((area, index) => ({
+  id: String(index + 1),
   area,
   active: true,
   floorPlanImage: null,
   floorPlanFileName: null,
   seatPlanImage: null,
   seatPlanFileName: null,
-  seatMarkers: []
+  operatingHours: ['08:00', '22:00'],
+  allowedDurations: ['30 Minutes', '1 Hour', '2 Hours (Max)']
 }));
+
+const initialAnnouncements = [
+  {
+    key: '1',
+    title: 'Grace check-in period revised',
+    body: 'The grace period to verify seat check-in via NFC tags has been adjusted from 15 minutes down to 5 minutes to prevent seat squatting.',
+    startDate: null,
+    endDate: null,
+    createdAt: '2026-05-25'
+  },
+  {
+    key: '2',
+    title: 'Level 2 Air Conditioning Repair',
+    body: 'F&M Department is servicing AC-400X unit above Seat L2-S04 on Wednesday morning. Expect noise disruption in the Quiet Study Area.',
+    startDate: '2026-06-28',
+    endDate: '2026-07-03',
+    createdAt: '2026-06-27'
+  },
+  {
+    key: '3',
+    title: 'Mid-Semester Break Closure',
+    body: 'The library will be closed for the mid-semester break. Seat bookings will resume once the break ends.',
+    startDate: '2026-08-10',
+    endDate: '2026-08-17',
+    createdAt: '2026-06-20'
+  },
+  {
+    key: '4',
+    title: 'New Penalty System Update',
+    body: 'Accruing 5 strikes will lead to an automatic 14-day library suspension block. Strike counts reset every semester.',
+    startDate: '2026-05-01',
+    endDate: '2026-05-20',
+    createdAt: '2026-05-01'
+  }
+];
 
 const initialComplaints = [
   {
@@ -198,12 +238,13 @@ const initialLostFound = [
 export default function App() {
   const screens = useBreakpoint();
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1 = Dashboard, 2 = Seats, 3 = Floor Plan, 4 = Blacklist, 5 = Complaints, 6 = Lost & Found
+  const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1 = Dashboard, 2 = Seats, 3 = Floor Plan, 4 = Blacklist, 5 = Announcements, 6 = Complaints, 7 = Lost & Found
 
   // Core States
   const [blacklist, setBlacklist] = useState(initialBlacklist);
   const [seats, setSeats] = useState(initialSeats);
   const [floorPlans, setFloorPlans] = useState(initialFloorPlans);
+  const [announcements, setAnnouncements] = useState(initialAnnouncements);
   const [complaints, setComplaints] = useState(initialComplaints);
   const [lostFound, setLostFound] = useState(initialLostFound);
 
@@ -217,11 +258,14 @@ export default function App() {
   const [isLostFoundModalVisible, setIsLostFoundModalVisible] = useState(false);
   const [isClaimModalVisible, setIsClaimModalVisible] = useState(false);
   const [selectedLostItem, setSelectedLostItem] = useState(null);
+  const [isAnnouncementModalVisible, setIsAnnouncementModalVisible] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
 
   // Form States
   const [blacklistForm] = Form.useForm();
   const [lostFoundForm] = Form.useForm();
   const [claimForm] = Form.useForm();
+  const [announcementForm] = Form.useForm();
 
   // Dynamic notifications counter
   const pendingNotifications = complaints.filter(c => c.status === 'Pending').length + lostFound.filter(lf => lf.status === 'Unclaimed').length;
@@ -291,44 +335,115 @@ export default function App() {
   };
 
   // Floor Plan actions
-  const handleUploadFloorPlanImage = (area, dataUrl, fileName) => {
-    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, floorPlanImage: dataUrl, floorPlanFileName: fileName } : fp));
-    message.success(`Floor plan image updated for ${area}.`);
+  const handleUploadFloorPlanImage = (id, dataUrl, fileName) => {
+    setFloorPlans(floorPlans.map(fp => fp.id === id ? { ...fp, floorPlanImage: dataUrl, floorPlanFileName: fileName } : fp));
+    message.success('Floor plan image updated.');
   };
 
-  const handleDeleteFloorPlanImage = (area) => {
-    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, floorPlanImage: null, floorPlanFileName: null } : fp));
-    message.info(`Floor plan image removed for ${area}.`);
+  const handleDeleteFloorPlanImage = (id) => {
+    setFloorPlans(floorPlans.map(fp => fp.id === id ? { ...fp, floorPlanImage: null, floorPlanFileName: null } : fp));
+    message.info('Floor plan image removed.');
   };
 
-  const handleUploadSeatPlanImage = (area, dataUrl, fileName) => {
-    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatPlanImage: dataUrl, seatPlanFileName: fileName } : fp));
-    message.success(`Seat plan image updated for ${area}.`);
+  const handleUploadSeatPlanImage = (id, dataUrl, fileName) => {
+    setFloorPlans(floorPlans.map(fp => fp.id === id ? { ...fp, seatPlanImage: dataUrl, seatPlanFileName: fileName } : fp));
+    message.success('Seat plan image updated.');
   };
 
-  const handleDeleteSeatPlanImage = (area) => {
-    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatPlanImage: null, seatPlanFileName: null, seatMarkers: [] } : fp));
-    message.info(`Seat plan image removed for ${area}.`);
+  const handleDeleteSeatPlanImage = (id) => {
+    setFloorPlans(floorPlans.map(fp => fp.id === id ? { ...fp, seatPlanImage: null, seatPlanFileName: null } : fp));
+    message.info('Seat plan image removed.');
   };
 
-  const handleToggleAreaActive = (area) => {
+  const handleToggleAreaActive = (id) => {
     setFloorPlans(floorPlans.map(fp => {
-      if (fp.area === area) {
+      if (fp.id === id) {
         const nextActive = !fp.active;
-        message.success(`${area} is now ${nextActive ? 'active' : 'closed'}.`);
+        message.success(`${fp.area} is now ${nextActive ? 'active' : 'closed'}.`);
         return { ...fp, active: nextActive };
       }
       return fp;
     }));
   };
 
-  const handleAddSeatMarker = (area, marker) => {
-    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatMarkers: [...fp.seatMarkers, marker] } : fp));
-    message.success(`Seat ${marker.label} marked on the plan.`);
+  // Library Settings actions (area name, operating hours, allowed booking durations)
+  const handleAddArea = (name) => {
+    const newEntry = {
+      id: String(Date.now()),
+      area: name,
+      active: true,
+      floorPlanImage: null,
+      floorPlanFileName: null,
+      seatPlanImage: null,
+      seatPlanFileName: null,
+      operatingHours: ['08:00', '22:00'],
+      allowedDurations: ['30 Minutes', '1 Hour', '2 Hours (Max)']
+    };
+    setFloorPlans([...floorPlans, newEntry]);
+    message.success(`Area "${name}" created.`);
   };
 
-  const handleRemoveSeatMarker = (area, markerId) => {
-    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatMarkers: fp.seatMarkers.filter(m => m.id !== markerId) } : fp));
+  const handleDeleteArea = (id) => {
+    const removed = floorPlans.find(fp => fp.id === id);
+    setFloorPlans(floorPlans.filter(fp => fp.id !== id));
+    message.success(`Area "${removed.area}" deleted.`);
+  };
+
+  const handleUpdateLibrarySettings = (id, { area, operatingHours, allowedDurations }) => {
+    setFloorPlans(floorPlans.map(fp => fp.id === id ? { ...fp, area, operatingHours, allowedDurations } : fp));
+    message.success(`Library settings updated for ${area}.`);
+  };
+
+  // Announcements actions
+  const showAddAnnouncementModal = () => {
+    setEditingAnnouncement(null);
+    announcementForm.resetFields();
+    setIsAnnouncementModalVisible(true);
+  };
+
+  const showEditAnnouncementModal = (announcement) => {
+    setEditingAnnouncement(announcement);
+    announcementForm.setFieldsValue({
+      title: announcement.title,
+      body: announcement.body,
+      dateRange: announcement.startDate && announcement.endDate
+        ? [dayjs(announcement.startDate), dayjs(announcement.endDate)]
+        : undefined
+    });
+    setIsAnnouncementModalVisible(true);
+  };
+
+  const handleSaveAnnouncement = (values) => {
+    const [startDate, endDate] = values.dateRange || [null, null];
+    const payload = {
+      title: values.title,
+      body: values.body,
+      startDate: startDate ? startDate.format('YYYY-MM-DD') : null,
+      endDate: endDate ? endDate.format('YYYY-MM-DD') : null
+    };
+
+    if (editingAnnouncement) {
+      setAnnouncements(announcements.map(a => a.key === editingAnnouncement.key ? { ...a, ...payload } : a));
+      message.success(`Announcement "${values.title}" updated.`);
+    } else {
+      const newEntry = {
+        key: String(Date.now()),
+        ...payload,
+        createdAt: new Date().toISOString().split('T')[0]
+      };
+      setAnnouncements([newEntry, ...announcements]);
+      message.success(`Announcement "${values.title}" published.`);
+    }
+
+    setIsAnnouncementModalVisible(false);
+    setEditingAnnouncement(null);
+    announcementForm.resetFields();
+  };
+
+  const handleDeleteAnnouncement = (key) => {
+    const announcement = announcements.find(a => a.key === key);
+    setAnnouncements(announcements.filter(a => a.key !== key));
+    message.success(`Announcement "${announcement.title}" deleted.`);
   };
 
   // Complaints actions
@@ -430,8 +545,9 @@ export default function App() {
             handleUploadSeatPlanImage={handleUploadSeatPlanImage}
             handleDeleteSeatPlanImage={handleDeleteSeatPlanImage}
             handleToggleAreaActive={handleToggleAreaActive}
-            handleAddSeatMarker={handleAddSeatMarker}
-            handleRemoveSeatMarker={handleRemoveSeatMarker}
+            handleAddArea={handleAddArea}
+            handleDeleteArea={handleDeleteArea}
+            handleUpdateLibrarySettings={handleUpdateLibrarySettings}
           />
         );
       case '4':
@@ -451,13 +567,27 @@ export default function App() {
         );
       case '5':
         return (
+          <Announcements
+            announcements={announcements}
+            isAnnouncementModalVisible={isAnnouncementModalVisible}
+            setIsAnnouncementModalVisible={setIsAnnouncementModalVisible}
+            editingAnnouncement={editingAnnouncement}
+            announcementForm={announcementForm}
+            showAddAnnouncementModal={showAddAnnouncementModal}
+            showEditAnnouncementModal={showEditAnnouncementModal}
+            handleSaveAnnouncement={handleSaveAnnouncement}
+            handleDeleteAnnouncement={handleDeleteAnnouncement}
+          />
+        );
+      case '6':
+        return (
           <Complaints
             complaints={complaints}
             handleUpdateComplaintStatus={handleUpdateComplaintStatus}
             handleUpdateAdminComments={handleUpdateAdminComments}
           />
         );
-      case '6':
+      case '7':
         return (
           <LostFound
             screens={screens}
@@ -502,10 +632,12 @@ export default function App() {
       case '3':
         return 'Floor Plan';
       case '4':
-        return 'Student Blacklist';
+        return 'Blacklist';
       case '5':
-        return 'Facility & Seat Complaints';
+        return 'Announcements';
       case '6':
+        return 'Facility & Seat Complaints';
+      case '7':
         return 'Lost & Found Custody';
       default:
         return 'Dashboard';
@@ -591,12 +723,15 @@ export default function App() {
             Floor Plan
           </Menu.Item>
           <Menu.Item key="4" icon={<StopOutlined />}>
-            Student Blacklist
+            Blacklist
           </Menu.Item>
-          <Menu.Item key="5" icon={<AlertOutlined />}>
+          <Menu.Item key="5" icon={<NotificationOutlined />}>
+            Announcements
+          </Menu.Item>
+          <Menu.Item key="6" icon={<AlertOutlined />}>
             Complaints
           </Menu.Item>
-          <Menu.Item key="6" icon={<InboxOutlined />}>
+          <Menu.Item key="7" icon={<InboxOutlined />}>
             Lost & Found
           </Menu.Item>
         </Menu>

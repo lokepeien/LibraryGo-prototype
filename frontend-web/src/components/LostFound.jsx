@@ -125,7 +125,7 @@ export default function LostFound({
       {/* Modal to Register Found Item */}
       <Modal
         title="📦 Record Found Item inside Library"
-        visible={isLostFoundModalVisible}
+        open={isLostFoundModalVisible}
         onCancel={() => {
           setIsLostFoundModalVisible(false);
           lostFoundForm.resetFields();
@@ -183,7 +183,7 @@ export default function LostFound({
       {/* Modal for Handover Claim verification */}
       <Modal
         title="✅ Verifying Ownership Handover"
-        visible={isClaimModalVisible}
+        open={isClaimModalVisible}
         onCancel={() => {
           setIsClaimModalVisible(false);
           claimForm.resetFields();
