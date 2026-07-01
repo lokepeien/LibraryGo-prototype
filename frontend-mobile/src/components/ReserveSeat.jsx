@@ -1,7 +1,76 @@
-import React from 'react';
-import { Card, Button, Select, Modal, Typography } from 'antd';
+import React, { useState } from 'react';
+import { Card, Button, Select, Modal, Tabs, Typography } from 'antd';
 
 const { Title, Text } = Typography;
+
+// Seat strip mockup, styled after the library's official "Seat Plan" map view
+function SeatPlanView({ library, area }) {
+  const seats = Array.from({ length: 12 }, (_, i) => ({
+    id: `S${i + 1}`,
+    occupied: i % 4 === 2
+  }));
+
+  return (
+    <div style={{ padding: '8px 0' }}>
+      <Text strong style={{ fontSize: '12px', color: '#1677ff', display: 'block' }}>{library}</Text>
+      <Text strong style={{ fontSize: '11px', color: '#1677ff', display: 'block', marginBottom: 12 }}>{area}</Text>
+
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, background: '#dbeafe', padding: '10px 6px 4px', borderRadius: 4, overflowX: 'auto' }}>
+        {seats.map(seat => (
+          <div key={seat.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 22 }}>
+            <div style={{ width: 14, height: 20, background: seat.occupied ? '#ef4444' : '#4ade80', borderRadius: 2, marginBottom: 2 }} />
+            <span style={{ fontSize: '7px', color: '#1e3a8a', fontWeight: 600 }}>{seat.id}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{ height: 6, background: '#1e293b', borderRadius: 2, marginTop: 2 }} />
+      <Text type="secondary" style={{ fontSize: '9px', display: 'block', textAlign: 'center', marginTop: 4 }}>Bookshelves</Text>
+
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 12 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '10px' }}>
+          <span style={{ width: 10, height: 10, background: '#4ade80', borderRadius: 2, display: 'inline-block' }} /> Available
+        </span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '10px' }}>
+          <span style={{ width: 10, height: 10, background: '#ef4444', borderRadius: 2, display: 'inline-block' }} /> Occupied
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// Schematic floor layout mockup, styled after the library's official "Floor Plan" map view
+function FloorPlanView({ library, area }) {
+  return (
+    <div style={{ padding: '8px 0' }}>
+      <Text strong style={{ fontSize: '12px', color: '#1677ff', display: 'block' }}>{library}</Text>
+      <Text strong style={{ fontSize: '11px', color: '#1677ff', display: 'block', marginBottom: 12 }}>Level 1 Floor Plan</Text>
+
+      <div style={{ position: 'relative', border: '2px solid #1e293b', borderRadius: 4, padding: 8, minHeight: 220 }}>
+        <div style={{ position: 'absolute', top: 8, left: 8, width: '35%', border: '1px solid #94a3b8', fontSize: '8px', textAlign: 'center', padding: '10px 2px', color: '#475569' }}>
+          Activity Room
+        </div>
+        <div style={{ position: 'absolute', top: 8, right: 8, width: '25%', height: 60, border: '1px solid #93c5fd', background: '#bfdbfe', fontSize: '8px', textAlign: 'center', padding: '4px 2px', color: '#1e3a8a', fontWeight: 700 }}>
+          ⭐ {area}
+        </div>
+        <div style={{ position: 'absolute', bottom: 30, left: 8, width: '30%', border: '1px solid #94a3b8', fontSize: '8px', textAlign: 'center', padding: '10px 2px', color: '#475569' }}>
+          Staff Workroom
+        </div>
+        <div style={{ position: 'absolute', bottom: 30, right: '35%', width: '20%', border: '1px solid #94a3b8', fontSize: '8px', textAlign: 'center', padding: '10px 2px', color: '#475569' }}>
+          Programme Zone
+        </div>
+        <div style={{ position: 'absolute', bottom: 30, right: 8, width: '15%', border: '1px solid #94a3b8', fontSize: '8px', textAlign: 'center', padding: '10px 2px', color: '#475569' }}>
+          Café
+        </div>
+        <div style={{ position: 'absolute', bottom: 8, left: '35%', fontSize: '8px', fontWeight: 700, color: '#1e293b' }}>
+          ENTRANCE
+        </div>
+      </div>
+      <Text type="secondary" style={{ fontSize: '9px', display: 'block', textAlign: 'center', marginTop: 8 }}>
+        ⭐ Highlighted zone indicates your selected area
+      </Text>
+    </div>
+  );
+}
 
 export default function ReserveSeat({
   student,
@@ -18,6 +87,8 @@ export default function ReserveSeat({
   handleConfirmReservation
 }) {
   const isBanned = student.strikes >= 5;
+  const [viewSeatVisible, setViewSeatVisible] = useState(false);
+  const [mapTab, setMapTab] = useState('seat');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="fade-in-view">
@@ -116,7 +187,18 @@ export default function ReserveSeat({
           >
             Book Seat
           </Button>
-          
+
+          {/* View Seat Trigger Button */}
+          <Button
+            type="default"
+            size="large"
+            block
+            style={{ marginTop: 4 }}
+            onClick={() => setViewSeatVisible(true)}
+          >
+            🗺️ View Seat
+          </Button>
+
           {isBanned && (
             <span style={{ color: '#ff4d4f', fontSize: '10.5px', textAlign: 'center', display: 'block' }}>
               ⛔ Cannot book new seats while privileges are suspended!
@@ -165,6 +247,35 @@ export default function ReserveSeat({
             </div>
           </div>
         </div>
+      </Modal>
+
+      {/* Maps: Seat Plan / Floor Plan Modal */}
+      <Modal
+        title={<span style={{ fontWeight: 700 }}>🗺️ Maps</span>}
+        visible={viewSeatVisible}
+        onCancel={() => setViewSeatVisible(false)}
+        footer={null}
+        width={340}
+        centered
+        destroyOnClose
+      >
+        <Tabs
+          activeKey={mapTab}
+          onChange={setMapTab}
+          centered
+          items={[
+            {
+              key: 'seat',
+              label: 'Seat Plan',
+              children: <SeatPlanView library={selectedLibrary} area={selectedArea} />
+            },
+            {
+              key: 'floor',
+              label: 'Floor Plan',
+              children: <FloorPlanView library={selectedLibrary} area={selectedArea} />
+            }
+          ]}
+        />
       </Modal>
     </div>
   );
