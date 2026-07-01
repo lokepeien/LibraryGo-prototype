@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { Card, Button, Select, Tag, Typography, Modal, Spin, Space, Tooltip, message } from 'antd';
-import { ScanOutlined, MobileOutlined, DeleteOutlined, PoweroffOutlined } from '@ant-design/icons';
+import { Card, Button, Select, Tag, Typography, Modal, Spin, Space, Tooltip, Tabs, Divider, message } from 'antd';
+import { ScanOutlined, MobileOutlined, DeleteOutlined, PoweroffOutlined, RedoOutlined } from '@ant-design/icons';
+import { SeatPlanView, FloorPlanView } from '../components/SeatMapViews';
 
 const { Title, Text } = Typography;
 
-const SEAT_OPTIONS = [
-  'L1-S01', 'L1-S02', 'L1-S03', 'L1-S04', 'L1-S05', 'L1-S06',
-  'L2-S01', 'L2-S02', 'L2-S03', 'L2-S04', 'L2-S05', 'L2-S06',
-  'L3-S01', 'L3-S02', 'L3-S03', 'L3-S04',
-  'GF-S01', 'GF-S02', 'GF-S03', 'GF-S04'
-];
+const SEAT_ID_OPTIONS = Array.from({ length: 10 }, (_, i) => {
+  const id = `S${String(i + 1).padStart(2, '0')}`;
+  return { value: id, label: id };
+});
 
 const generateMockUid = () => {
   const bytes = Array.from({ length: 6 }, () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase());
@@ -28,10 +27,16 @@ export default function AdminDashboard({ student, handleToggleRole }) {
   const [scanModalVisible, setScanModalVisible] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scannedUid, setScannedUid] = useState(null);
+  const [mapLevel, setMapLevel] = useState('Level 1');
+  const [mapArea, setMapArea] = useState('Area 1');
   const [seatToMap, setSeatToMap] = useState(undefined);
+  const [viewSeatVisible, setViewSeatVisible] = useState(false);
+  const [mapTab, setMapTab] = useState('seat');
 
   const openScanModal = () => {
     setScannedUid(null);
+    setMapLevel('Level 1');
+    setMapArea('Area 1');
     setSeatToMap(undefined);
     setScanModalVisible(true);
   };
@@ -51,13 +56,14 @@ export default function AdminDashboard({ student, handleToggleRole }) {
       return;
     }
 
-    const replacingExisting = mappings.some(m => m.seatId === seatToMap);
+    const seatId = `${mapLevel} (${mapArea}) - ${seatToMap}`;
+    const replacingExisting = mappings.some(m => m.seatId === seatId);
     setMappings(prev => [
-      { key: String(Date.now()), seatId: seatToMap, nfcUid: scannedUid },
-      ...prev.filter(m => m.seatId !== seatToMap)
+      { key: String(Date.now()), seatId, nfcUid: scannedUid },
+      ...prev.filter(m => m.seatId !== seatId)
     ]);
 
-    message.success(`✅ Mapped NFC Tag to Seat ${seatToMap}${replacingExisting ? ' (replaced previous mapping)' : ''}.`);
+    message.success(`✅ Mapped NFC Tag to Seat ${seatId}${replacingExisting ? ' (replaced previous mapping)' : ''}.`);
     setScanModalVisible(false);
   };
 
@@ -175,26 +181,111 @@ export default function AdminDashboard({ student, handleToggleRole }) {
             )}
           </div>
 
+          {scannedUid && !scanning && (
+            <Button
+              type="link"
+              size="small"
+              icon={<RedoOutlined />}
+              onClick={handleScanTag}
+              style={{ padding: 0, marginTop: 2, fontSize: '11px' }}
+            >
+              Re-scan Tag
+            </Button>
+          )}
+
           {scannedUid && (
             <div style={{ marginTop: 18, textAlign: 'left' }}>
-              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
-                🪑 Map to Seat ID:
-              </Text>
-              <Select
-                value={seatToMap}
-                onChange={(val) => setSeatToMap(val)}
-                placeholder="Select a seat..."
-                style={{ width: '100%' }}
-                options={SEAT_OPTIONS.map(s => ({ value: s, label: s }))}
-              />
-              <Button type="primary" block style={{ marginTop: 14 }} onClick={handleSaveMapping}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                    📍 Select Level:
+                  </Text>
+                  <Select
+                    value={mapLevel}
+                    onChange={(val) => setMapLevel(val)}
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: 'Level 1', label: 'Level 1' },
+                      { value: 'Level 2', label: 'Level 2' },
+                      { value: 'Level 3', label: 'Level 3' },
+                      { value: 'Level 4', label: 'Level 4' }
+                    ]}
+                  />
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                    🧭 Select Area:
+                  </Text>
+                  <Select
+                    value={mapArea}
+                    onChange={(val) => setMapArea(val)}
+                    style={{ width: '100%' }}
+                    options={[
+                      { value: 'Area 1', label: 'Area 1' },
+                      { value: 'Area 2', label: 'Area 2' }
+                    ]}
+                  />
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                  💺 Seat:
+                </Text>
+                <Button type="primary" size="large" block onClick={() => setViewSeatVisible(true)}>
+                  Select Seat
+                </Button>
+              </div>
+
+              <Divider style={{ margin: '10px 0' }} />
+
+              <Button type="primary" size="large" block onClick={handleSaveMapping}>
                 Save Mapping
-              </Button>
-              <Button type="link" block size="small" style={{ marginTop: 4 }} onClick={handleScanTag}>
-                Re-scan Tag
               </Button>
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Maps: Seat Plan / Floor Plan Modal */}
+      <Modal
+        title={<span style={{ fontWeight: 700 }}>🗺️ Maps</span>}
+        visible={viewSeatVisible}
+        onCancel={() => setViewSeatVisible(false)}
+        footer={null}
+        width={340}
+        centered
+        destroyOnClose
+      >
+        <Tabs
+          activeKey={mapTab}
+          onChange={setMapTab}
+          centered
+          items={[
+            {
+              key: 'seat',
+              label: 'Seat Plan',
+              children: <SeatPlanView library="PRZS" area={`${mapLevel} (${mapArea})`} />
+            },
+            {
+              key: 'floor',
+              label: 'Floor Plan',
+              children: <FloorPlanView library="PRZS" area={`${mapLevel} (${mapArea})`} />
+            }
+          ]}
+        />
+
+        <div style={{ marginTop: 8 }}>
+          <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+            💺 Select Seat ID:
+          </Text>
+          <Select
+            value={seatToMap}
+            onChange={(val) => setSeatToMap(val)}
+            style={{ width: '100%' }}
+            options={SEAT_ID_OPTIONS}
+          />
         </div>
       </Modal>
     </div>
