@@ -5,3 +5,4 @@ export { default as StudentBlacklist } from './StudentBlacklist';
 export { default as Announcements } from './Announcements';
 export { default as Complaints } from './Complaints';
 export { default as LostFound } from './LostFound';
+export { default as NFCTags } from './NFCTags';

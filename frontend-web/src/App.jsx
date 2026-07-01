@@ -26,7 +26,8 @@ import {
   InboxOutlined,
   PictureOutlined,
   NotificationOutlined,
-  SwapOutlined
+  SwapOutlined,
+  TagsOutlined
 } from '@ant-design/icons';
 import './App.css';
 
@@ -88,6 +89,30 @@ const initialSeats = [
   { id: 'GF-S02', area: 'Ground Floor: Multimedia Room', nfcUid: '04:22:33:44:55:66:77', status: 'Reserved', studentName: 'Amiruddin (A22CS0021)', date: '2026-07-01', timeSlot: '12:00 PM - 02:00 PM' },
   { id: 'GF-S03', area: 'Ground Floor: Multimedia Room', nfcUid: '04:11:22:33:44:55:66', status: 'Available', studentName: null, date: null, timeSlot: null },
   { id: 'GF-S04', area: 'Ground Floor: Multimedia Room', nfcUid: '04:00:11:22:33:44:55', status: 'Available', studentName: null, date: null, timeSlot: null }
+];
+
+// Registered NFC hardware tag inventory (Admin Web: view + reassign only — creation happens in the mobile app)
+const initialNfcTags = [
+  { key: '1', uid: '04:A2:3E:9B:10:E2:80', seatId: 'L1-S01', area: 'Level 1: Collaborative Zone', status: 'Active', dateRegistered: '2026-03-12' },
+  { key: '2', uid: '04:5C:8B:1A:F5:2C:81', seatId: 'L1-S02', area: 'Level 1: Collaborative Zone', status: 'Active', dateRegistered: '2026-03-12' },
+  { key: '3', uid: '04:FF:E2:33:6B:40:80', seatId: 'L1-S03', area: 'Level 1: Collaborative Zone', status: 'Active', dateRegistered: '2026-03-12' },
+  { key: '4', uid: '04:2E:7A:B2:CC:5F:80', seatId: 'L1-S04', area: 'Level 1: Collaborative Zone', status: 'Active', dateRegistered: '2026-03-13' },
+  { key: '5', uid: '04:D4:6C:5F:81:4A:80', seatId: 'L1-S05', area: 'Level 1: Collaborative Zone', status: 'Active', dateRegistered: '2026-03-13' },
+  { key: '6', uid: '04:3B:5A:F3:CC:89:81', seatId: 'L1-S06', area: 'Level 1: Collaborative Zone', status: 'Faulty', dateRegistered: '2026-03-13' },
+  { key: '7', uid: '04:E3:4C:6A:B2:1A:80', seatId: 'L2-S01', area: 'Level 2: Quiet Study Area', status: 'Active', dateRegistered: '2026-03-14' },
+  { key: '8', uid: '04:77:88:99:AA:BB:CC', seatId: 'L2-S02', area: 'Level 2: Quiet Study Area', status: 'Active', dateRegistered: '2026-03-14' },
+  { key: '9', uid: '04:11:22:33:44:55:66', seatId: 'L2-S03', area: 'Level 2: Quiet Study Area', status: 'Active', dateRegistered: '2026-03-14' },
+  { key: '10', uid: '04:AA:BB:CC:DD:EE:FF', seatId: 'L2-S04', area: 'Level 2: Quiet Study Area', status: 'Active', dateRegistered: '2026-03-15' },
+  { key: '11', uid: '04:12:34:56:78:90:AB', seatId: 'L2-S05', area: 'Level 2: Quiet Study Area', status: 'Inactive', dateRegistered: '2026-03-15' },
+  { key: '12', uid: '04:FE:DC:BA:98:76:54', seatId: 'L2-S06', area: 'Level 2: Quiet Study Area', status: 'Active', dateRegistered: '2026-03-15' },
+  { key: '13', uid: '04:55:66:77:88:99:00', seatId: 'L3-S01', area: 'Level 3: Postgraduate Hub', status: 'Active', dateRegistered: '2026-03-16' },
+  { key: '14', uid: '04:AB:CD:EF:01:23:45', seatId: 'L3-S02', area: 'Level 3: Postgraduate Hub', status: 'Active', dateRegistered: '2026-03-16' },
+  { key: '15', uid: '04:88:99:00:11:22:33', seatId: 'L3-S03', area: 'Level 3: Postgraduate Hub', status: 'Active', dateRegistered: '2026-03-16' },
+  { key: '16', uid: '04:44:55:66:77:88:99', seatId: 'L3-S04', area: 'Level 3: Postgraduate Hub', status: 'Active', dateRegistered: '2026-03-17' },
+  { key: '17', uid: '04:33:44:55:66:77:88', seatId: 'GF-S01', area: 'Ground Floor: Multimedia Room', status: 'Active', dateRegistered: '2026-03-17' },
+  { key: '18', uid: '04:22:33:44:55:66:77', seatId: 'GF-S02', area: 'Ground Floor: Multimedia Room', status: 'Active', dateRegistered: '2026-03-17' },
+  { key: '19', uid: '05:11:22:33:44:55:66', seatId: 'GF-S03', area: 'Ground Floor: Multimedia Room', status: 'Active', dateRegistered: '2026-03-18' },
+  { key: '20', uid: '04:00:11:22:33:44:55', seatId: 'GF-S04', area: 'Ground Floor: Multimedia Room', status: 'Active', dateRegistered: '2026-03-18' }
 ];
 
 const initialFloorPlans = AREA_NAMES.map((area, index) => ({
@@ -244,6 +269,9 @@ export default function App() {
 
   const handleToggleStaffRole = () => {
     const next = staffRole === 'Librarian' ? 'Admin' : 'Librarian';
+    if (next === 'Librarian' && selectedKey === '8') {
+      setSelectedKey('1');
+    }
     setStaffRole(next);
     message.success(`Switched to ${next} view.`);
   };
@@ -255,11 +283,16 @@ export default function App() {
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
   const [complaints, setComplaints] = useState(initialComplaints);
   const [lostFound, setLostFound] = useState(initialLostFound);
+  const [nfcTags, setNfcTags] = useState(initialNfcTags);
 
   // Search and Filter States
   const [blacklistSearch, setBlacklistSearch] = useState('');
   const [seatAreaFilter, setSeatAreaFilter] = useState('All');
   const [lostFoundFilter, setLostFoundFilter] = useState('All');
+  const [nfcSearch, setNfcSearch] = useState('');
+  const [nfcAreaFilter, setNfcAreaFilter] = useState('All');
+  const [nfcStatusFilter, setNfcStatusFilter] = useState('All');
+  const [reassignModalTag, setReassignModalTag] = useState(null);
 
   // Modal States
   const [isBlacklistModalVisible, setIsBlacklistModalVisible] = useState(false);
@@ -505,6 +538,22 @@ export default function App() {
     }));
   };
 
+  // NFC Tags actions (Admin Web: view + reassign only — registration happens in the mobile app)
+  const showReassignModal = (tag) => {
+    setReassignModalTag(tag);
+  };
+
+  const handleReassignSeat = (newSeatId) => {
+    setNfcTags(nfcTags.map(tag => {
+      if (tag.key === reassignModalTag.key) {
+        message.success(`Tag ${tag.uid} reassigned from ${tag.seatId} to ${newSeatId}.`);
+        return { ...tag, seatId: newSeatId };
+      }
+      return tag;
+    }));
+    setReassignModalTag(null);
+  };
+
   const showClaimModal = (item) => {
     setSelectedLostItem(item);
     setIsClaimModalVisible(true);
@@ -628,6 +677,33 @@ export default function App() {
             handleMarkUnclaimed={handleMarkUnclaimed}
           />
         );
+      case '8':
+        return staffRole === 'Admin' ? (
+          <Admin.NFCTags
+            nfcTags={nfcTags}
+            nfcSearch={nfcSearch}
+            setNfcSearch={setNfcSearch}
+            nfcAreaFilter={nfcAreaFilter}
+            setNfcAreaFilter={setNfcAreaFilter}
+            nfcStatusFilter={nfcStatusFilter}
+            setNfcStatusFilter={setNfcStatusFilter}
+            reassignModalTag={reassignModalTag}
+            showReassignModal={showReassignModal}
+            setReassignModalTag={setReassignModalTag}
+            handleReassignSeat={handleReassignSeat}
+          />
+        ) : (
+          <Views.DashboardOverview
+            screens={screens}
+            bookedSeats={bookedSeats}
+            totalSeats={totalSeats}
+            blacklistedCount={blacklistedCount}
+            activeStrikes={activeStrikes}
+            unresolvedComplaints={unresolvedComplaints}
+            complaints={complaints}
+            lostFound={lostFound}
+          />
+        );
       default:
         return (
           <Views.DashboardOverview
@@ -660,6 +736,8 @@ export default function App() {
         return 'Facility & Seat Complaints';
       case '7':
         return 'Lost & Found Custody';
+      case '8':
+        return 'NFC Tags';
       default:
         return 'Dashboard';
     }
@@ -755,6 +833,11 @@ export default function App() {
           <Menu.Item key="7" icon={<InboxOutlined />}>
             Lost & Found
           </Menu.Item>
+          {staffRole === 'Admin' && (
+            <Menu.Item key="8" icon={<TagsOutlined />}>
+              NFC Tags
+            </Menu.Item>
+          )}
         </Menu>
       </Sider>
 
