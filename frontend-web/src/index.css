@@ -146,3 +146,9 @@ body {
   color: var(--text-muted);
   font-weight: 500;
 }
+
+/* Pushes icon-only Tabs (e.g. Floor/List view toggles) to the right edge of the tab bar */
+.tabs-align-right .ant-tabs-nav-list {
+  width: 100%;
+  justify-content: flex-end;
+}

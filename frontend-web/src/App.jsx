@@ -22,16 +22,19 @@ import {
   UserOutlined,
   BellOutlined,
   PoweroffOutlined,
-  InboxOutlined
+  InboxOutlined,
+  PictureOutlined
 } from '@ant-design/icons';
 import './App.css';
 
 // Import Separated View Components
 import DashboardOverview from './components/DashboardOverview';
-import SeatAreaManagement from './components/SeatAreaManagement';
+import SeatManagement from './components/SeatManagement';
+import FloorPlan from './components/FloorPlan';
 import StudentBlacklist from './components/StudentBlacklist';
 import Complaints from './components/Complaints';
 import LostFound from './components/LostFound';
+import { AREA_NAMES } from './constants/areas';
 
 const { Header, Content, Sider } = Layout;
 const { Title, Text } = Typography;
@@ -60,33 +63,43 @@ const initialBlacklist = [
 
 const initialSeats = [
   // Level 1: Collaborative Zone
-  { id: 'L1-S01', area: 'Level 1: Collaborative Zone', nfcUid: '04:A2:3E:9B:10:E2:80', status: 'Booked', occupant: 'Ahmad Faiz (A22CS0148)' },
-  { id: 'L1-S02', area: 'Level 1: Collaborative Zone', nfcUid: '04:5C:8B:1A:F5:2C:81', status: 'Available', occupant: null },
-  { id: 'L1-S03', area: 'Level 1: Collaborative Zone', nfcUid: '04:FF:E2:33:6B:40:80', status: 'Booked', occupant: 'Siti Aminah (A22CS0032)' },
-  { id: 'L1-S04', area: 'Level 1: Collaborative Zone', nfcUid: '04:2E:7A:B2:CC:5F:80', status: 'Available', occupant: null },
-  { id: 'L1-S05', area: 'Level 1: Collaborative Zone', nfcUid: '04:D4:6C:5F:81:4A:80', status: 'Booked', occupant: 'Jason Lee (A21CS0912)' },
-  { id: 'L1-S06', area: 'Level 1: Collaborative Zone', nfcUid: '04:3B:5A:F3:CC:89:81', status: 'Available', occupant: null },
+  { id: 'L1-S01', area: 'Level 1: Collaborative Zone', nfcUid: '04:A2:3E:9B:10:E2:80', status: 'Reserved', studentName: 'Ahmad Faiz (A22CS0148)', date: '2026-07-01', timeSlot: '08:00 AM - 10:00 AM' },
+  { id: 'L1-S02', area: 'Level 1: Collaborative Zone', nfcUid: '04:5C:8B:1A:F5:2C:81', status: 'Available', studentName: null, date: null, timeSlot: null },
+  { id: 'L1-S03', area: 'Level 1: Collaborative Zone', nfcUid: '04:FF:E2:33:6B:40:80', status: 'Reserved', studentName: 'Siti Aminah (A22CS0032)', date: '2026-07-01', timeSlot: '10:00 AM - 12:00 PM' },
+  { id: 'L1-S04', area: 'Level 1: Collaborative Zone', nfcUid: '04:2E:7A:B2:CC:5F:80', status: 'Available', studentName: null, date: null, timeSlot: null },
+  { id: 'L1-S05', area: 'Level 1: Collaborative Zone', nfcUid: '04:D4:6C:5F:81:4A:80', status: 'Reserved', studentName: 'Jason Lee (A21CS0912)', date: '2026-07-01', timeSlot: '12:00 PM - 02:00 PM' },
+  { id: 'L1-S06', area: 'Level 1: Collaborative Zone', nfcUid: '04:3B:5A:F3:CC:89:81', status: 'Unavailable', studentName: null, date: null, timeSlot: null, maintenanceReason: 'Broken chair — awaiting replacement' },
 
   // Level 2: Quiet Study Area
-  { id: 'L2-S01', area: 'Level 2: Quiet Study Area', nfcUid: '04:E3:4C:6A:B2:1A:80', status: 'Booked', occupant: 'Tan Mei Ling (A21EC0052)' },
-  { id: 'L2-S02', area: 'Level 2: Quiet Study Area', nfcUid: '04:77:88:99:AA:BB:CC', status: 'Available', occupant: null },
-  { id: 'L2-S03', area: 'Level 2: Quiet Study Area', nfcUid: '04:11:22:33:44:55:66', status: 'Available', occupant: null },
-  { id: 'L2-S04', area: 'Level 2: Quiet Study Area', nfcUid: '04:AA:BB:CC:DD:EE:FF', status: 'Booked', occupant: 'Saraswathy Mohan (A22CS0089)' },
-  { id: 'L2-S05', area: 'Level 2: Quiet Study Area', nfcUid: '04:12:34:56:78:90:AB', status: 'Available', occupant: null },
-  { id: 'L2-S06', area: 'Level 2: Quiet Study Area', nfcUid: '04:FE:DC:BA:98:76:54', status: 'Available', occupant: null },
+  { id: 'L2-S01', area: 'Level 2: Quiet Study Area', nfcUid: '04:E3:4C:6A:B2:1A:80', status: 'Reserved', studentName: 'Tan Mei Ling (A21EC0052)', date: '2026-07-01', timeSlot: '10:00 AM - 12:00 PM' },
+  { id: 'L2-S02', area: 'Level 2: Quiet Study Area', nfcUid: '04:77:88:99:AA:BB:CC', status: 'Available', studentName: null, date: null, timeSlot: null },
+  { id: 'L2-S03', area: 'Level 2: Quiet Study Area', nfcUid: '04:11:22:33:44:55:66', status: 'Available', studentName: null, date: null, timeSlot: null },
+  { id: 'L2-S04', area: 'Level 2: Quiet Study Area', nfcUid: '04:AA:BB:CC:DD:EE:FF', status: 'Reserved', studentName: 'Saraswathy Mohan (A22CS0089)', date: '2026-07-01', timeSlot: '02:00 PM - 04:00 PM' },
+  { id: 'L2-S05', area: 'Level 2: Quiet Study Area', nfcUid: '04:12:34:56:78:90:AB', status: 'Available', studentName: null, date: null, timeSlot: null },
+  { id: 'L2-S06', area: 'Level 2: Quiet Study Area', nfcUid: '04:FE:DC:BA:98:76:54', status: 'Unavailable', studentName: null, date: null, timeSlot: null, maintenanceReason: 'AC unit leaking condensation water above desk' },
 
   // Level 3: Postgraduate Hub
-  { id: 'L3-S01', area: 'Level 3: Postgraduate Hub', nfcUid: '04:55:66:77:88:99:00', status: 'Booked', occupant: 'Dr. Sarah (Staff)' },
-  { id: 'L3-S02', area: 'Level 3: Postgraduate Hub', nfcUid: '04:AB:CD:EF:01:23:45', status: 'Available', occupant: null },
-  { id: 'L3-S03', area: 'Level 3: Postgraduate Hub', nfcUid: '04:88:99:00:11:22:33', status: 'Booked', occupant: 'Ngooi Jun (A20EC0990)' },
-  { id: 'L3-S04', area: 'Level 3: Postgraduate Hub', nfcUid: '04:44:55:66:77:88:99', status: 'Available', occupant: null },
+  { id: 'L3-S01', area: 'Level 3: Postgraduate Hub', nfcUid: '04:55:66:77:88:99:00', status: 'Reserved', studentName: 'Dr. Sarah (Staff)', date: '2026-07-01', timeSlot: '08:00 AM - 10:00 AM' },
+  { id: 'L3-S02', area: 'Level 3: Postgraduate Hub', nfcUid: '04:AB:CD:EF:01:23:45', status: 'Available', studentName: null, date: null, timeSlot: null },
+  { id: 'L3-S03', area: 'Level 3: Postgraduate Hub', nfcUid: '04:88:99:00:11:22:33', status: 'Reserved', studentName: 'Ngooi Jun (A20EC0990)', date: '2026-07-01', timeSlot: '04:00 PM - 06:00 PM' },
+  { id: 'L3-S04', area: 'Level 3: Postgraduate Hub', nfcUid: '04:44:55:66:77:88:99', status: 'Available', studentName: null, date: null, timeSlot: null },
 
   // Ground Floor: Multimedia Room
-  { id: 'GF-S01', area: 'Ground Floor: Multimedia Room', nfcUid: '04:33:44:55:66:77:88', status: 'Booked', occupant: 'Devi Ratna (B21CS0922)' },
-  { id: 'GF-S02', area: 'Ground Floor: Multimedia Room', nfcUid: '04:22:33:44:55:66:77', status: 'Booked', occupant: 'Amiruddin (A22CS0021)' },
-  { id: 'GF-S03', area: 'Ground Floor: Multimedia Room', nfcUid: '04:11:22:33:44:55:66', status: 'Available', occupant: null },
-  { id: 'GF-S04', area: 'Ground Floor: Multimedia Room', nfcUid: '04:00:11:22:33:44:55', status: 'Available', occupant: null }
+  { id: 'GF-S01', area: 'Ground Floor: Multimedia Room', nfcUid: '04:33:44:55:66:77:88', status: 'Reserved', studentName: 'Devi Ratna (B21CS0922)', date: '2026-07-01', timeSlot: '10:00 AM - 12:00 PM' },
+  { id: 'GF-S02', area: 'Ground Floor: Multimedia Room', nfcUid: '04:22:33:44:55:66:77', status: 'Reserved', studentName: 'Amiruddin (A22CS0021)', date: '2026-07-01', timeSlot: '12:00 PM - 02:00 PM' },
+  { id: 'GF-S03', area: 'Ground Floor: Multimedia Room', nfcUid: '04:11:22:33:44:55:66', status: 'Available', studentName: null, date: null, timeSlot: null },
+  { id: 'GF-S04', area: 'Ground Floor: Multimedia Room', nfcUid: '04:00:11:22:33:44:55', status: 'Available', studentName: null, date: null, timeSlot: null }
 ];
+
+const initialFloorPlans = AREA_NAMES.map(area => ({
+  area,
+  active: true,
+  floorPlanImage: null,
+  floorPlanFileName: null,
+  seatPlanImage: null,
+  seatPlanFileName: null,
+  seatMarkers: []
+}));
 
 const initialComplaints = [
   {
@@ -185,11 +198,12 @@ const initialLostFound = [
 export default function App() {
   const screens = useBreakpoint();
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1 = Dashboard, 2 = Seats, 3 = Blacklist, 4 = Complaints, 5 = Lost & Found
+  const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1 = Dashboard, 2 = Seats, 3 = Floor Plan, 4 = Blacklist, 5 = Complaints, 6 = Lost & Found
 
   // Core States
   const [blacklist, setBlacklist] = useState(initialBlacklist);
   const [seats, setSeats] = useState(initialSeats);
+  const [floorPlans, setFloorPlans] = useState(initialFloorPlans);
   const [complaints, setComplaints] = useState(initialComplaints);
   const [lostFound, setLostFound] = useState(initialLostFound);
 
@@ -214,7 +228,7 @@ export default function App() {
 
   // Calculate statistics dynamically
   const totalSeats = seats.length;
-  const bookedSeats = seats.filter(s => s.status === 'Booked').length;
+  const bookedSeats = seats.filter(s => s.status === 'Reserved').length;
   const blacklistedCount = blacklist.filter(b => b.status === 'Blacklisted').length;
   const activeStrikes = blacklist.reduce((acc, curr) => acc + curr.strikes, 0);
   const unresolvedComplaints = complaints.filter(c => c.status !== 'Resolved').length;
@@ -254,18 +268,67 @@ export default function App() {
 
   // Seat booking actions
   const handleToggleSeatStatus = (seatId) => {
-    setSeats(seats.map(seat => {
-      if (seat.id === seatId) {
-        const nextStatus = seat.status === 'Available' ? 'Booked' : 'Available';
+    const seat = seats.find(s => s.id === seatId);
+    if (seat && seat.status === 'Unavailable') {
+      message.error(`Seat ${seatId} is unavailable and cannot be assigned.`);
+      return;
+    }
+
+    setSeats(seats.map(s => {
+      if (s.id === seatId) {
+        const nextStatus = s.status === 'Available' ? 'Reserved' : 'Available';
         message.success(`Seat ${seatId} is now ${nextStatus}.`);
         return {
-          ...seat,
+          ...s,
           status: nextStatus,
-          occupant: nextStatus === 'Booked' ? 'Walk-in Student' : null
+          studentName: nextStatus === 'Reserved' ? 'Walk-in Student' : null,
+          date: nextStatus === 'Reserved' ? new Date().toISOString().split('T')[0] : null,
+          timeSlot: nextStatus === 'Reserved' ? 'Walk-in Session' : null
         };
       }
-      return seat;
+      return s;
     }));
+  };
+
+  // Floor Plan actions
+  const handleUploadFloorPlanImage = (area, dataUrl, fileName) => {
+    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, floorPlanImage: dataUrl, floorPlanFileName: fileName } : fp));
+    message.success(`Floor plan image updated for ${area}.`);
+  };
+
+  const handleDeleteFloorPlanImage = (area) => {
+    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, floorPlanImage: null, floorPlanFileName: null } : fp));
+    message.info(`Floor plan image removed for ${area}.`);
+  };
+
+  const handleUploadSeatPlanImage = (area, dataUrl, fileName) => {
+    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatPlanImage: dataUrl, seatPlanFileName: fileName } : fp));
+    message.success(`Seat plan image updated for ${area}.`);
+  };
+
+  const handleDeleteSeatPlanImage = (area) => {
+    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatPlanImage: null, seatPlanFileName: null, seatMarkers: [] } : fp));
+    message.info(`Seat plan image removed for ${area}.`);
+  };
+
+  const handleToggleAreaActive = (area) => {
+    setFloorPlans(floorPlans.map(fp => {
+      if (fp.area === area) {
+        const nextActive = !fp.active;
+        message.success(`${area} is now ${nextActive ? 'active' : 'closed'}.`);
+        return { ...fp, active: nextActive };
+      }
+      return fp;
+    }));
+  };
+
+  const handleAddSeatMarker = (area, marker) => {
+    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatMarkers: [...fp.seatMarkers, marker] } : fp));
+    message.success(`Seat ${marker.label} marked on the plan.`);
+  };
+
+  const handleRemoveSeatMarker = (area, markerId) => {
+    setFloorPlans(floorPlans.map(fp => fp.area === area ? { ...fp, seatMarkers: fp.seatMarkers.filter(m => m.id !== markerId) } : fp));
   };
 
   // Complaints actions
@@ -351,7 +414,7 @@ export default function App() {
         );
       case '2':
         return (
-          <SeatAreaManagement
+          <SeatManagement
             seats={seats}
             seatAreaFilter={seatAreaFilter}
             setSeatAreaFilter={setSeatAreaFilter}
@@ -359,6 +422,19 @@ export default function App() {
           />
         );
       case '3':
+        return (
+          <FloorPlan
+            floorPlans={floorPlans}
+            handleUploadFloorPlanImage={handleUploadFloorPlanImage}
+            handleDeleteFloorPlanImage={handleDeleteFloorPlanImage}
+            handleUploadSeatPlanImage={handleUploadSeatPlanImage}
+            handleDeleteSeatPlanImage={handleDeleteSeatPlanImage}
+            handleToggleAreaActive={handleToggleAreaActive}
+            handleAddSeatMarker={handleAddSeatMarker}
+            handleRemoveSeatMarker={handleRemoveSeatMarker}
+          />
+        );
+      case '4':
         return (
           <StudentBlacklist
             screens={screens}
@@ -373,7 +449,7 @@ export default function App() {
             handleRemoveBlacklist={handleRemoveBlacklist}
           />
         );
-      case '4':
+      case '5':
         return (
           <Complaints
             complaints={complaints}
@@ -381,7 +457,7 @@ export default function App() {
             handleUpdateAdminComments={handleUpdateAdminComments}
           />
         );
-      case '5':
+      case '6':
         return (
           <LostFound
             screens={screens}
@@ -422,12 +498,14 @@ export default function App() {
       case '1':
         return 'Dashboard Overview';
       case '2':
-        return 'Seat & Area Management';
+        return 'Seat Management';
       case '3':
-        return 'Student Blacklist';
+        return 'Floor Plan';
       case '4':
-        return 'Facility & Seat Complaints';
+        return 'Student Blacklist';
       case '5':
+        return 'Facility & Seat Complaints';
+      case '6':
         return 'Lost & Found Custody';
       default:
         return 'Dashboard';
@@ -507,15 +585,18 @@ export default function App() {
             Dashboard Overview
           </Menu.Item>
           <Menu.Item key="2" icon={<AreaChartOutlined />}>
-            Seat & Area Management
+            Seat Management
           </Menu.Item>
-          <Menu.Item key="3" icon={<StopOutlined />}>
+          <Menu.Item key="3" icon={<PictureOutlined />}>
+            Floor Plan
+          </Menu.Item>
+          <Menu.Item key="4" icon={<StopOutlined />}>
             Student Blacklist
           </Menu.Item>
-          <Menu.Item key="4" icon={<AlertOutlined />}>
+          <Menu.Item key="5" icon={<AlertOutlined />}>
             Complaints
           </Menu.Item>
-          <Menu.Item key="5" icon={<InboxOutlined />}>
+          <Menu.Item key="6" icon={<InboxOutlined />}>
             Lost & Found
           </Menu.Item>
         </Menu>
