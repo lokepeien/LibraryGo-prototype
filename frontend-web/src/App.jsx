@@ -25,18 +25,14 @@ import {
   PoweroffOutlined,
   InboxOutlined,
   PictureOutlined,
-  NotificationOutlined
+  NotificationOutlined,
+  SwapOutlined
 } from '@ant-design/icons';
 import './App.css';
 
-// Import Separated View Components
-import DashboardOverview from './components/DashboardOverview';
-import SeatManagement from './components/SeatManagement';
-import FloorPlan from './components/FloorPlan';
-import StudentBlacklist from './components/StudentBlacklist';
-import Announcements from './components/Announcements';
-import Complaints from './components/Complaints';
-import LostFound from './components/LostFound';
+// Import Separated View Components, namespaced per staff role (currently identical, ready to diverge later)
+import * as Librarian from './librarian';
+import * as Admin from './admin';
 import { AREA_NAMES } from './constants/areas';
 
 const { Header, Content, Sider } = Layout;
@@ -243,6 +239,14 @@ export default function App() {
   const screens = useBreakpoint();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1 = Dashboard, 2 = Seats, 3 = Floor Plan, 4 = Blacklist, 5 = Announcements, 6 = Complaints, 7 = Lost & Found
+  const [staffRole, setStaffRole] = useState('Librarian'); // 'Librarian' | 'Admin' — both currently share identical functions
+  const Views = staffRole === 'Admin' ? Admin : Librarian;
+
+  const handleToggleStaffRole = () => {
+    const next = staffRole === 'Librarian' ? 'Admin' : 'Librarian';
+    setStaffRole(next);
+    message.success(`Switched to ${next} view.`);
+  };
 
   // Core States
   const [blacklist, setBlacklist] = useState(initialBlacklist);
@@ -532,7 +536,7 @@ export default function App() {
     switch (selectedKey) {
       case '1':
         return (
-          <DashboardOverview
+          <Views.DashboardOverview
             screens={screens}
             bookedSeats={bookedSeats}
             totalSeats={totalSeats}
@@ -545,7 +549,7 @@ export default function App() {
         );
       case '2':
         return (
-          <SeatManagement
+          <Views.SeatManagement
             seats={seats}
             seatAreaFilter={seatAreaFilter}
             setSeatAreaFilter={setSeatAreaFilter}
@@ -554,7 +558,7 @@ export default function App() {
         );
       case '3':
         return (
-          <FloorPlan
+          <Views.FloorPlan
             floorPlans={floorPlans}
             handleUploadFloorPlanImage={handleUploadFloorPlanImage}
             handleDeleteFloorPlanImage={handleDeleteFloorPlanImage}
@@ -568,7 +572,7 @@ export default function App() {
         );
       case '4':
         return (
-          <StudentBlacklist
+          <Views.StudentBlacklist
             screens={screens}
             blacklist={blacklist}
             blacklistSearch={blacklistSearch}
@@ -583,7 +587,7 @@ export default function App() {
         );
       case '5':
         return (
-          <Announcements
+          <Views.Announcements
             announcements={announcements}
             isAnnouncementModalVisible={isAnnouncementModalVisible}
             setIsAnnouncementModalVisible={setIsAnnouncementModalVisible}
@@ -597,7 +601,7 @@ export default function App() {
         );
       case '6':
         return (
-          <Complaints
+          <Views.Complaints
             complaints={complaints}
             handleUpdateComplaintStatus={handleUpdateComplaintStatus}
             handleUpdateAdminComments={handleUpdateAdminComments}
@@ -605,7 +609,7 @@ export default function App() {
         );
       case '7':
         return (
-          <LostFound
+          <Views.LostFound
             screens={screens}
             lostFound={lostFound}
             lostFoundFilter={lostFoundFilter}
@@ -626,7 +630,7 @@ export default function App() {
         );
       default:
         return (
-          <DashboardOverview
+          <Views.DashboardOverview
             screens={screens}
             bookedSeats={bookedSeats}
             totalSeats={totalSeats}
@@ -776,7 +780,7 @@ export default function App() {
               <Avatar style={{ backgroundColor: '#1677ff' }} icon={<UserOutlined />} />
               {screens.sm && (
                 <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b' }}>Librarian Admin</div>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b' }}>{staffRole === 'Admin' ? 'Admin' : 'Librarian Admin'}</div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>Staff Domain: @utm.my</div>
                 </div>
               )}
@@ -788,6 +792,10 @@ export default function App() {
                 <Button type="text" shape="circle" size="large" icon={<BellOutlined style={{ fontSize: '18px', color: '#475569' }} />} />
               </Badge>
             </Popover>
+
+            <Tooltip title={`Switch to ${staffRole === 'Librarian' ? 'Admin' : 'Librarian'} view`}>
+              <Button type="text" shape="circle" size="large" icon={<SwapOutlined style={{ fontSize: '16px', color: '#475569' }} />} onClick={handleToggleStaffRole} />
+            </Tooltip>
 
             <Tooltip title="Log Out">
               <Button type="text" shape="circle" size="large" icon={<PoweroffOutlined style={{ fontSize: '16px', color: '#ff4d4f' }} />} onClick={() => message.info('Logging out system...')} />
