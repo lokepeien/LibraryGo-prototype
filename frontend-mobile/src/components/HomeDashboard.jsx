@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Card, Button, Badge, Space } from 'antd';
-import { BellOutlined, UserOutlined, BookOutlined, NotificationOutlined, AlertOutlined, InboxOutlined } from '@ant-design/icons';
+import { BellOutlined, UserOutlined, BookOutlined, AlertOutlined, InboxOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
 // Import all sub-functions
 import PersonalDashboard from './PersonalDashboard';
 import ReserveSeat from './ReserveSeat';
-import ViewAnnouncements from './ViewAnnouncements';
 import SubmitComplaint from './SubmitComplaint';
 import ViewLostFound from './ViewLostFound';
 
@@ -34,7 +33,7 @@ export default function HomeDashboard({
   handleConfirmReservation
 }) {
   // Sub-navigation state inside the first page landing launchpad:
-  // 'book' (Reserve) | 'dash' (Dashboard) | 'news' (Announcements) | 'issue' (Complaint) | 'lost' (Lost & Found)
+  // 'book' (Reserve) | 'dash' (Dashboard) | 'issue' (Complaint) | 'lost' (Lost & Found)
   // Default to 'book' (Reserve Seat) so it stays in front as previously requested!
   const [subTab, setSubTab] = useState('book');
 
@@ -68,8 +67,6 @@ export default function HomeDashboard({
             formatTimer={formatTimer}
           />
         );
-      case 'news':
-        return <ViewAnnouncements />;
       case 'issue':
         return <SubmitComplaint student={student} />;
       case 'lost':
@@ -108,7 +105,7 @@ export default function HomeDashboard({
       <div style={{ padding: '0 4px' }}>
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
+          gridTemplateColumns: 'repeat(4, 1fr)',
           gap: 6,
           background: '#ffffff',
           padding: 8,
@@ -151,24 +148,6 @@ export default function HomeDashboard({
           >
             <UserOutlined style={{ color: subTab === 'dash' ? '#1677ff' : '#64748b', fontSize: '16px', marginBottom: 4 }} />
             <Text strong={subTab === 'dash'} style={{ fontSize: '9px', color: subTab === 'dash' ? '#1677ff' : '#475569' }}>Profile</Text>
-          </div>
-
-          {/* Announcements segment */}
-          <div
-            onClick={() => setSubTab('news')}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              cursor: 'pointer',
-              padding: '6px 2px',
-              borderRadius: 8,
-              backgroundColor: subTab === 'news' ? '#e6f4ff' : 'transparent',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <NotificationOutlined style={{ color: subTab === 'news' ? '#1677ff' : '#64748b', fontSize: '16px', marginBottom: 4 }} />
-            <Text strong={subTab === 'news'} style={{ fontSize: '9px', color: subTab === 'news' ? '#1677ff' : '#475569' }}>Announce</Text>
           </div>
 
           {/* Submit Complaint segment */}
