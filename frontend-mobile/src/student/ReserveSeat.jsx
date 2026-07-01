@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Button, Select, Modal, Tabs, Typography, DatePicker, message } from 'antd';
+import { Card, Button, Select, Modal, Tabs, Typography, DatePicker } from 'antd';
+import { CheckCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -106,18 +107,11 @@ export default function ReserveSeat({
   const isBanned = student.strikes >= 5;
   const [viewSeatVisible, setViewSeatVisible] = useState(false);
   const [mapTab, setMapTab] = useState('seat');
+  const [bookSuccessVisible, setBookSuccessVisible] = useState(false);
+  const [checkInDeadline, setCheckInDeadline] = useState('');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }} className="fade-in-view">
-      <Card className="mobile-card" bodyStyle={{ padding: 12 }}>
-        <Title level={5} style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#1e293b' }}>
-          🎟️ Seat Booking & Reservation
-        </Title>
-        <Text type="secondary" style={{ fontSize: '11px' }}>
-          Select library branches, area zones, and session slots to secure your study space.
-        </Text>
-      </Card>
-
       {/* Library selection Form */}
       <Card className="mobile-card" bodyStyle={{ padding: 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -156,6 +150,21 @@ export default function ReserveSeat({
             />
           </div>
 
+          {/* Date Selector */}
+          <div>
+            <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+              📅 Select Date:
+            </Text>
+            <DatePicker
+              value={selectedDate}
+              onChange={(val) => setSelectedDate(val)}
+              disabledDate={disabledDate}
+              allowClear={false}
+              format="DD MMM YYYY"
+              style={{ width: '100%' }}
+            />
+          </div>
+
           {/* Time Slot Selector */}
           <div>
             <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
@@ -173,21 +182,6 @@ export default function ReserveSeat({
                 { value: '04:00 PM - 06:00 PM', label: '04:00 PM - 06:00 PM' },
                 { value: '06:00 PM - 08:00 PM', label: '06:00 PM - 08:00 PM' }
               ]}
-            />
-          </div>
-
-          {/* Date Selector */}
-          <div>
-            <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
-              📅 Select Date:
-            </Text>
-            <DatePicker
-              value={selectedDate}
-              onChange={(val) => setSelectedDate(val)}
-              disabledDate={disabledDate}
-              allowClear={false}
-              format="DD MMM YYYY"
-              style={{ width: '100%' }}
             />
           </div>
 
@@ -216,8 +210,8 @@ export default function ReserveSeat({
               block
               disabled={isBanned}
               onClick={() => {
-                const deadline = getCheckInDeadline(selectedTimeSlot);
-                message.success(`🎉 Book seat success! Please check-in before ${deadline}.`);
+                setCheckInDeadline(getCheckInDeadline(selectedTimeSlot));
+                setBookSuccessVisible(true);
               }}
             >
               Book Seat
@@ -296,6 +290,26 @@ export default function ReserveSeat({
               <Text strong style={{ fontSize: '12.5px', color: '#1677ff' }}>{selectedDuration}</Text>
             </div>
           </div>
+        </div>
+      </Modal>
+
+      {/* Book Seat Success Modal */}
+      <Modal
+        visible={bookSuccessVisible}
+        footer={null}
+        closable={false}
+        width={300}
+        centered
+      >
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: 12 }} />
+          <Title level={5} style={{ margin: '0 0 8px 0' }}>Book Seat Success!</Title>
+          <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: 16 }}>
+            Please check-in before {checkInDeadline}.
+          </Text>
+          <Button type="primary" block onClick={() => setBookSuccessVisible(false)}>
+            OK
+          </Button>
         </div>
       </Modal>
 
