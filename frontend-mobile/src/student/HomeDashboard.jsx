@@ -23,6 +23,8 @@ export default function HomeDashboard({
   formatTimer,
   selectedLibrary,
   setSelectedLibrary,
+  selectedLevel,
+  setSelectedLevel,
   selectedArea,
   setSelectedArea,
   selectedSeatId,
@@ -48,6 +50,8 @@ export default function HomeDashboard({
             student={student}
             selectedLibrary={selectedLibrary}
             setSelectedLibrary={setSelectedLibrary}
+            selectedLevel={selectedLevel}
+            setSelectedLevel={setSelectedLevel}
             selectedArea={selectedArea}
             setSelectedArea={setSelectedArea}
             selectedSeatId={selectedSeatId}

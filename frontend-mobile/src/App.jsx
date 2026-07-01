@@ -66,7 +66,8 @@ export default function App() {
 
   // New Reservation Form State (Managed centrally, routed by Home Page)
   const [selectedLibrary, setSelectedLibrary] = useState('Perpustakaan Sultanah Zanariah (PSZ)');
-  const [selectedArea, setSelectedArea] = useState('Level 2: Quiet Study Area');
+  const [selectedLevel, setSelectedLevel] = useState('Level 1');
+  const [selectedArea, setSelectedArea] = useState('Area 1');
   const [selectedSeatId, setSelectedSeatId] = useState('S01');
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('10:00 AM - 12:00 PM');
@@ -232,17 +233,17 @@ export default function App() {
 
     const seat = selectedSeatId;
     let nfc = '04:E3:4C:6A:B2:1A:80';
-    if (selectedArea.includes('Level 1')) {
+    if (selectedLevel === 'Level 1') {
       nfc = '04:5C:8B:1A:F5:2C:81';
-    } else if (selectedArea.includes('Level 3')) {
+    } else if (selectedLevel === 'Level 3') {
       nfc = '04:AB:CD:EF:01:23:45';
-    } else if (selectedArea.includes('Ground')) {
+    } else if (selectedLevel === 'Level 4') {
       nfc = '04:11:22:33:44:55:66';
     }
 
     setActiveBooking({
       seatId: seat,
-      areaName: selectedArea,
+      areaName: `${selectedLevel} (${selectedArea})`,
       nfcUid: nfc,
       status: 'Reserved',
       timeRemaining: 300, // 5-minute grace period
@@ -303,6 +304,8 @@ export default function App() {
                   formatTimer={formatTimer}
                   selectedLibrary={selectedLibrary}
                   setSelectedLibrary={setSelectedLibrary}
+                  selectedLevel={selectedLevel}
+                  setSelectedLevel={setSelectedLevel}
                   selectedArea={selectedArea}
                   setSelectedArea={setSelectedArea}
                   selectedSeatId={selectedSeatId}

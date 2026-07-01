@@ -57,6 +57,8 @@ export default function ReserveSeat({
   student,
   selectedLibrary,
   setSelectedLibrary,
+  selectedLevel,
+  setSelectedLevel,
   selectedArea,
   setSelectedArea,
   selectedSeatId,
@@ -97,22 +99,39 @@ export default function ReserveSeat({
             />
           </div>
 
-          {/* Area Zone Selector */}
-          <div>
-            <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
-              📍 Select Library Area Zone:
-            </Text>
-            <Select
-              value={selectedArea}
-              onChange={(val) => setSelectedArea(val)}
-              style={{ width: '100%' }}
-              options={[
-                { value: 'Level 1: Collaborative Zone', label: 'Level 1: Collaborative Zone' },
-                { value: 'Level 2: Quiet Study Area', label: 'Level 2: Quiet Study Area' },
-                { value: 'Level 3: Postgraduate Hub', label: 'Level 3: Postgraduate Hub' },
-                { value: 'Ground Floor: Multimedia Room', label: 'Ground Floor: Multimedia Room' }
-              ]}
-            />
+          {/* Library Level & Area Selectors */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                📍 Select Level:
+              </Text>
+              <Select
+                value={selectedLevel}
+                onChange={(val) => setSelectedLevel(val)}
+                style={{ width: '100%' }}
+                options={[
+                  { value: 'Level 1', label: 'Level 1' },
+                  { value: 'Level 2', label: 'Level 2' },
+                  { value: 'Level 3', label: 'Level 3' },
+                  { value: 'Level 4', label: 'Level 4' }
+                ]}
+              />
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                🧭 Select Area:
+              </Text>
+              <Select
+                value={selectedArea}
+                onChange={(val) => setSelectedArea(val)}
+                style={{ width: '100%' }}
+                options={[
+                  { value: 'Area 1', label: 'Area 1' },
+                  { value: 'Area 2', label: 'Area 2' }
+                ]}
+              />
+            </div>
           </div>
 
           {/* Select Seat Trigger Button */}
@@ -254,12 +273,12 @@ export default function ReserveSeat({
             {
               key: 'seat',
               label: 'Seat Plan',
-              children: <SeatPlanView library={selectedLibrary} area={selectedArea} />
+              children: <SeatPlanView library={selectedLibrary} area={`${selectedLevel} (${selectedArea})`} />
             },
             {
               key: 'floor',
               label: 'Floor Plan',
-              children: <FloorPlanView library={selectedLibrary} area={selectedArea} />
+              children: <FloorPlanView library={selectedLibrary} area={`${selectedLevel} (${selectedArea})`} />
             }
           ]}
         />
