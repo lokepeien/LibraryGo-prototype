@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
 import {
   Space,
   Button,
@@ -19,10 +20,13 @@ import {
   ScanOutlined
 } from '@ant-design/icons';
 
-// Import Separated Screen Components
-import HomeDashboard from './components/HomeDashboard';
-import ActiveBooking from './components/ActiveBooking';
-import BookingHistory from './components/BookingHistory';
+// Student Screens
+import HomeDashboard from './student/HomeDashboard';
+import ActiveBooking from './student/ActiveBooking';
+import BookingHistory from './student/BookingHistory';
+
+// Admin Screens
+import AdminDashboard from './admin/AdminDashboard';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -36,6 +40,7 @@ export default function App() {
     matrixId: 'A22CS0148',
     domain: 'Student Domain: @utm.my',
     strikes: 2, // starting with 2 strikes
+    role: 'Student' // 'Student' | 'Admin'
   });
 
   // Seat booking simulation state
@@ -60,6 +65,7 @@ export default function App() {
   // New Reservation Form State (Managed centrally, routed by Home Page)
   const [selectedLibrary, setSelectedLibrary] = useState('Perpustakaan Sultanah Zanariah (PSZ)');
   const [selectedArea, setSelectedArea] = useState('Level 2: Quiet Study Area');
+  const [selectedDate, setSelectedDate] = useState(dayjs());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('10:00 AM - 12:00 PM');
   const [selectedDuration, setSelectedDuration] = useState('2 Hours (Max)');
   
@@ -115,6 +121,17 @@ export default function App() {
     }));
 
     message.error('⚠️ Reservation grace timeout! Disciplinary strike count incremented.');
+  };
+
+  // Logout & switch mock identity between Student and Admin
+  const handleToggleRole = () => {
+    setStudent(prev => {
+      const isAdmin = prev.role === 'Admin';
+      message.success(isAdmin ? '🎓 Logged back in as Student.' : '🔑 Logged out. Signed in as Admin.');
+      return isAdmin
+        ? { ...prev, name: 'Pei En', matrixId: 'A22CS0148', domain: 'Student Domain: @utm.my', role: 'Student' }
+        : { ...prev, name: 'Admin Staff', matrixId: 'STAFF-0001', domain: 'Staff Domain: @utm.my', role: 'Admin' };
+    });
   };
 
   // NFC Simulation Trigger
@@ -251,61 +268,72 @@ export default function App() {
       <div className="phone-screen">
         {/* Scroll content */}
         <div className="screen-scroll-content">
-          {activeTab === 'home' && (
-            <HomeDashboard
-              student={student}
-              setStudent={setStudent}
-              activeBooking={activeBooking}
-              setActiveTab={setActiveTab}
-              simulateNewReservation={simulateNewReservation}
-              setNfcModalVisible={setNfcModalVisible}
-              setAnnouncementsVisible={setAnnouncementsVisible}
-              formatTimer={formatTimer}
-              selectedLibrary={selectedLibrary}
-              setSelectedLibrary={setSelectedLibrary}
-              selectedArea={selectedArea}
-              setSelectedArea={setSelectedArea}
-              selectedTimeSlot={selectedTimeSlot}
-              setSelectedTimeSlot={setSelectedTimeSlot}
-              selectedDuration={selectedDuration}
-              setSelectedDuration={setSelectedDuration}
-              confirmationVisible={confirmationVisible}
-              setConfirmationVisible={setConfirmationVisible}
-              handleConfirmReservation={handleConfirmReservation}
-            />
-          )}
-          {activeTab === 'booking' && (
-            <ActiveBooking
-              student={student}
-              activeBooking={activeBooking}
-              simulateNewReservation={simulateNewReservation}
-              setNfcModalVisible={setNfcModalVisible}
-              handleEarlyCheckout={handleEarlyCheckout}
-              formatTimer={formatTimer}
-            />
-          )}
-          {activeTab === 'history' && (
-            <BookingHistory historyList={historyList} />
+          {student.role === 'Admin' ? (
+            <AdminDashboard student={student} handleToggleRole={handleToggleRole} />
+          ) : (
+            <>
+              {activeTab === 'home' && (
+                <HomeDashboard
+                  student={student}
+                  setStudent={setStudent}
+                  activeBooking={activeBooking}
+                  setActiveTab={setActiveTab}
+                  simulateNewReservation={simulateNewReservation}
+                  setNfcModalVisible={setNfcModalVisible}
+                  setAnnouncementsVisible={setAnnouncementsVisible}
+                  handleToggleRole={handleToggleRole}
+                  formatTimer={formatTimer}
+                  selectedLibrary={selectedLibrary}
+                  setSelectedLibrary={setSelectedLibrary}
+                  selectedArea={selectedArea}
+                  setSelectedArea={setSelectedArea}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  selectedTimeSlot={selectedTimeSlot}
+                  setSelectedTimeSlot={setSelectedTimeSlot}
+                  selectedDuration={selectedDuration}
+                  setSelectedDuration={setSelectedDuration}
+                  confirmationVisible={confirmationVisible}
+                  setConfirmationVisible={setConfirmationVisible}
+                  handleConfirmReservation={handleConfirmReservation}
+                />
+              )}
+              {activeTab === 'booking' && (
+                <ActiveBooking
+                  student={student}
+                  activeBooking={activeBooking}
+                  simulateNewReservation={simulateNewReservation}
+                  setNfcModalVisible={setNfcModalVisible}
+                  handleEarlyCheckout={handleEarlyCheckout}
+                  formatTimer={formatTimer}
+                />
+              )}
+              {activeTab === 'history' && (
+                <BookingHistory historyList={historyList} />
+              )}
+            </>
           )}
         </div>
 
-        {/* Tabbar Navigation */}
-        <div className="phone-tabbar">
-          <div className={`tab-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
-            <HomeOutlined className="tab-item-icon" />
-            <span>Home</span>
+        {/* Tabbar Navigation (Student only) */}
+        {student.role !== 'Admin' && (
+          <div className="phone-tabbar">
+            <div className={`tab-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
+              <HomeOutlined className="tab-item-icon" />
+              <span>Home</span>
+            </div>
+            <div className={`tab-item ${activeTab === 'booking' ? 'active' : ''}`} onClick={() => setActiveTab('booking')}>
+              <Badge dot={activeBooking.status !== 'None'} size="small">
+                <ClockCircleOutlined className="tab-item-icon" />
+              </Badge>
+              <span>Live Session</span>
+            </div>
+            <div className={`tab-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
+              <HistoryOutlined className="tab-item-icon" />
+              <span>History</span>
+            </div>
           </div>
-          <div className={`tab-item ${activeTab === 'booking' ? 'active' : ''}`} onClick={() => setActiveTab('booking')}>
-            <Badge dot={activeBooking.status !== 'None'} size="small">
-              <ClockCircleOutlined className="tab-item-icon" />
-            </Badge>
-            <span>Live Session</span>
-          </div>
-          <div className={`tab-item ${activeTab === 'history' ? 'active' : ''}`} onClick={() => setActiveTab('history')}>
-            <HistoryOutlined className="tab-item-icon" />
-            <span>History</span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* iOS Home Indicator simulated bezel spacer */}

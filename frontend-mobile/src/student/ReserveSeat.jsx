@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
-import { Card, Button, Select, Modal, Tabs, Typography } from 'antd';
+import { Card, Button, Select, Modal, Tabs, Typography, DatePicker } from 'antd';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
+
+// Only today and tomorrow are bookable, everything else is greyed out in the calendar
+function disabledDate(current) {
+  if (!current) return false;
+  const today = dayjs().startOf('day');
+  const tomorrow = today.add(1, 'day');
+  return !(current.isSame(today, 'day') || current.isSame(tomorrow, 'day'));
+}
 
 // Seat strip mockup, styled after the library's official "Seat Plan" map view
 function SeatPlanView({ library, area }) {
@@ -78,6 +87,8 @@ export default function ReserveSeat({
   setSelectedLibrary,
   selectedArea,
   setSelectedArea,
+  selectedDate,
+  setSelectedDate,
   selectedTimeSlot,
   setSelectedTimeSlot,
   selectedDuration,
@@ -159,6 +170,21 @@ export default function ReserveSeat({
             />
           </div>
 
+          {/* Date Selector */}
+          <div>
+            <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+              📅 Select Date:
+            </Text>
+            <DatePicker
+              value={selectedDate}
+              onChange={(val) => setSelectedDate(val)}
+              disabledDate={disabledDate}
+              allowClear={false}
+              format="DD MMM YYYY"
+              style={{ width: '100%' }}
+            />
+          </div>
+
           {/* Session Duration Selector */}
           <div>
             <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
@@ -236,6 +262,10 @@ export default function ReserveSeat({
             <div>
               <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>AREA ZONE:</span>
               <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedArea}</Text>
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>DATE:</span>
+              <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedDate ? selectedDate.format('DD MMM YYYY') : ''}</Text>
             </div>
             <div>
               <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>TIME SLOT:</span>

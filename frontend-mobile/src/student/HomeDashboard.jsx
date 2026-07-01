@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card, Button, Badge, Space } from 'antd';
-import { BellOutlined, UserOutlined, BookOutlined, AlertOutlined, InboxOutlined } from '@ant-design/icons';
+import { Card, Button, Badge, Space, Tag, Tooltip } from 'antd';
+import { BellOutlined, UserOutlined, BookOutlined, AlertOutlined, InboxOutlined, PoweroffOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
 // Import all sub-functions
@@ -19,11 +19,14 @@ export default function HomeDashboard({
   simulateNewReservation,
   setNfcModalVisible,
   setAnnouncementsVisible,
+  handleToggleRole,
   formatTimer,
   selectedLibrary,
   setSelectedLibrary,
   selectedArea,
   setSelectedArea,
+  selectedDate,
+  setSelectedDate,
   selectedTimeSlot,
   setSelectedTimeSlot,
   selectedDuration,
@@ -47,6 +50,8 @@ export default function HomeDashboard({
             setSelectedLibrary={setSelectedLibrary}
             selectedArea={selectedArea}
             setSelectedArea={setSelectedArea}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
             selectedTimeSlot={selectedTimeSlot}
             setSelectedTimeSlot={setSelectedTimeSlot}
             selectedDuration={selectedDuration}
@@ -82,7 +87,12 @@ export default function HomeDashboard({
       <div className="mobile-header-banner">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: '11px', fontWeight: 600 }}>UTM SEAT COMPANION</Text>
+            <Space align="center" size={6}>
+              <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: '11px', fontWeight: 600 }}>UTM SEAT COMPANION</Text>
+              <Tag color={student.role === 'Admin' ? 'gold' : 'blue'} style={{ fontSize: '9px', lineHeight: '14px', padding: '0 5px', margin: 0 }}>
+                {student.role === 'Admin' ? '🛠️ Admin' : '🎓 Student'}
+              </Tag>
+            </Space>
             <Title level={4} style={{ margin: 0, color: '#ffffff', fontWeight: 700, fontSize: '18px' }}>
               Hi, {student.name} 👋
             </Title>
@@ -90,14 +100,24 @@ export default function HomeDashboard({
               {student.domain}
             </Text>
           </div>
-          <Badge dot color="#ff4d4f" size="default">
-            <Button
-              type="text"
-              shape="circle"
-              icon={<BellOutlined style={{ color: '#fff', fontSize: '18px' }} />}
-              onClick={() => setAnnouncementsVisible(true)}
-            />
-          </Badge>
+          <Space size={4}>
+            <Badge dot color="#ff4d4f" size="default">
+              <Button
+                type="text"
+                shape="circle"
+                icon={<BellOutlined style={{ color: '#fff', fontSize: '18px' }} />}
+                onClick={() => setAnnouncementsVisible(true)}
+              />
+            </Badge>
+            <Tooltip title={student.role === 'Admin' ? 'Logout & switch to Student' : 'Logout & switch to Admin'}>
+              <Button
+                type="text"
+                shape="circle"
+                icon={<PoweroffOutlined style={{ color: '#fff', fontSize: '16px' }} />}
+                onClick={handleToggleRole}
+              />
+            </Tooltip>
+          </Space>
         </div>
       </div>
 
