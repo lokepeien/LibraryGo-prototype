@@ -4,9 +4,14 @@ import { AlertOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
+// Persists across component remounts (tab switches) within the session so IDs keep incrementing
+let complaintIdCounter = 1;
+const formatComplaintId = (n) => `CMP-2026-${String(n).padStart(3, '0')}`;
+
 export default function SubmitComplaint({ student }) {
-  const [seatId, setSeatId] = useState('');
+  const [complaintId, setComplaintId] = useState(() => formatComplaintId(complaintIdCounter));
   const [category, setCategory] = useState('Air Conditioning');
+  const [otherCategory, setOtherCategory] = useState('');
   const [details, setDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -15,8 +20,8 @@ export default function SubmitComplaint({ student }) {
       message.error('⛔ Action Denied: Account suspended.');
       return;
     }
-    if (!seatId) {
-      message.error('Please specify the Seat or Desk ID!');
+    if (category === 'Other' && !otherCategory) {
+      message.error('Please specify the issue category!');
       return;
     }
     if (!details) {
@@ -27,9 +32,12 @@ export default function SubmitComplaint({ student }) {
     setSubmitting(true);
     setTimeout(() => {
       setSubmitting(false);
-      message.success(`🛠️ Facility complaint logged under CMP-2026-${Math.floor(100 + Math.random() * 900)}! Maintenance notified.`);
-      setSeatId('');
+      message.success(`🛠️ Facility complaint logged under ${complaintId}! Maintenance notified.`);
       setDetails('');
+      setCategory('Air Conditioning');
+      setOtherCategory('');
+      complaintIdCounter += 1;
+      setComplaintId(formatComplaintId(complaintIdCounter));
     }, 1200);
   };
 
@@ -46,17 +54,12 @@ export default function SubmitComplaint({ student }) {
 
       <Card className="mobile-card" bodyStyle={{ padding: 16 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Seat ID input */}
+          {/* Complaint ID display */}
           <div>
             <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
-              🪑 Desk / Seat ID:
+              🔢 Complaint ID:
             </Text>
-            <Input
-              value={seatId}
-              onChange={(e) => setSeatId(e.target.value)}
-              placeholder="e.g. L2-S04"
-              style={{ width: '100%' }}
-            />
+            <Input value={complaintId} disabled style={{ width: '100%' }} />
           </div>
 
           {/* Issue Category selector */}
@@ -72,10 +75,26 @@ export default function SubmitComplaint({ student }) {
                 { value: 'Air Conditioning', label: 'Air Conditioning Leak / Temperature' },
                 { value: 'Power Socket Broken', label: 'Power Socket Broken' },
                 { value: 'Damaged Furniture', label: 'Broken Chair / Desk Wobble' },
-                { value: 'Wi-Fi Unstable', label: 'UTM Wifi Connectivity Drop' }
+                { value: 'Wi-Fi Unstable', label: 'UTM Wifi Connectivity Drop' },
+                { value: 'Other', label: 'Other' }
               ]}
             />
           </div>
+
+          {/* Other category input, only shown when "Other" is selected */}
+          {category === 'Other' && (
+            <div>
+              <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+                ✏️ Specify Category:
+              </Text>
+              <Input
+                value={otherCategory}
+                onChange={(e) => setOtherCategory(e.target.value)}
+                placeholder="e.g. Lighting flickering"
+                style={{ width: '100%' }}
+              />
+            </div>
+          )}
 
           {/* Details input */}
           <div>
