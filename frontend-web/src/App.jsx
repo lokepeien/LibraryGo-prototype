@@ -310,12 +310,6 @@ export default function App() {
   // Dynamic notifications counter
   const pendingNotifications = complaints.filter(c => c.status === 'Pending').length + lostFound.filter(lf => lf.status === 'Unclaimed').length;
 
-  // Calculate statistics dynamically
-  const totalSeats = seats.length;
-  const bookedSeats = seats.filter(s => s.status === 'Reserved').length;
-  const blacklistedCount = blacklist.filter(b => b.status === 'Blacklisted').length;
-  const activeStrikes = blacklist.reduce((acc, curr) => acc + curr.strikes, 0);
-  const unresolvedComplaints = complaints.filter(c => c.status !== 'Resolved').length;
 
   // --- ACTIONS ---
 
