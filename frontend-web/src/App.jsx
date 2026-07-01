@@ -54,14 +54,14 @@ const initialStats = {
 };
 
 const initialBlacklist = [
-  { key: '1', studentId: 'A22CS0148', name: 'Ahmad Faiz bin Azmi', strikes: 3, status: 'Blacklisted' },
-  { key: '2', studentId: 'A21EC0052', name: 'Tan Mei Ling', strikes: 2, status: 'Active' },
-  { key: '3', studentId: 'A22CS0089', name: 'Saraswathy a/p Mohan', strikes: 3, status: 'Blacklisted' },
-  { key: '4', studentId: 'A20EC0110', name: 'Brandon Lim Wei Shen', strikes: 1, status: 'Active' },
-  { key: '5', studentId: 'B22CS0302', name: 'Nurul Izzah binti Rosli', strikes: 3, status: 'Blacklisted' },
-  { key: '6', studentId: 'A21CS0221', name: 'Muhammad Aliff bin Zulkifli', strikes: 0, status: 'Active' },
-  { key: '7', studentId: 'A22EC0024', name: 'Chong Jia Yi', strikes: 3, status: 'Blacklisted' },
-  { key: '8', studentId: 'A20CS0005', name: 'Haris Haroon', strikes: 2, status: 'Active' }
+  { key: '1', name: 'Ahmad Faiz bin Azmi', email: 'ahmadfaiz.azmi@gmail.com', strikes: 5, status: 'Blacklisted' },
+  { key: '2', name: 'Tan Mei Ling', email: 'tanmeiling@gmail.com', strikes: 2, status: 'Active' },
+  { key: '3', name: 'Saraswathy a/p Mohan', email: 'saraswathy.mohan@gmail.com', strikes: 5, status: 'Blacklisted' },
+  { key: '4', name: 'Brandon Lim Wei Shen', email: 'brandonlimws@gmail.com', strikes: 1, status: 'Active' },
+  { key: '5', name: 'Nurul Izzah binti Rosli', email: 'nurulizzah.rosli@gmail.com', strikes: 5, status: 'Blacklisted' },
+  { key: '6', name: 'Muhammad Aliff bin Zulkifli', email: 'aliffzulkifli@gmail.com', strikes: 0, status: 'Active' },
+  { key: '7', name: 'Chong Jia Yi', email: 'chongjiayi@gmail.com', strikes: 5, status: 'Blacklisted' },
+  { key: '8', name: 'Haris Haroon', email: 'harisharoon@gmail.com', strikes: 3, status: 'Active' }
 ];
 
 const initialSeats = [
@@ -198,7 +198,8 @@ const initialLostFound = [
     date: '2026-05-23',
     status: 'Unclaimed',
     claimedBy: '',
-    claimDate: ''
+    claimDate: '',
+    photo: null
   },
   {
     key: '2',
@@ -209,7 +210,8 @@ const initialLostFound = [
     date: '2026-05-24',
     status: 'Unclaimed',
     claimedBy: '',
-    claimDate: ''
+    claimDate: '',
+    photo: null
   },
   {
     key: '3',
@@ -220,7 +222,8 @@ const initialLostFound = [
     date: '2026-05-22',
     status: 'Claimed',
     claimedBy: 'A21EC0052',
-    claimDate: '2026-05-23'
+    claimDate: '2026-05-23',
+    photo: null
   },
   {
     key: '4',
@@ -231,7 +234,8 @@ const initialLostFound = [
     date: '2026-05-25',
     status: 'Unclaimed',
     claimedBy: '',
-    claimDate: ''
+    claimDate: '',
+    photo: null
   }
 ];
 
@@ -283,15 +287,15 @@ export default function App() {
   const handleAddBlacklist = (values) => {
     const newEntry = {
       key: String(blacklist.length + 1),
-      studentId: values.studentId.toUpperCase(),
       name: values.name,
+      email: values.email.toLowerCase(),
       strikes: values.strikes,
-      status: values.strikes >= 3 ? 'Blacklisted' : 'Active'
+      status: values.strikes >= 5 ? 'Blacklisted' : 'Active'
     };
     setBlacklist([newEntry, ...blacklist]);
     setIsBlacklistModalVisible(false);
     blacklistForm.resetFields();
-    message.success(`Student ${values.name} (${values.studentId.toUpperCase()}) added to monitoring list.`);
+    message.success(`Student ${values.name} (${values.email.toLowerCase()}) added to monitoring list.`);
   };
 
   const handleResetStrikes = (recordKey) => {
@@ -467,22 +471,34 @@ export default function App() {
   };
 
   // Lost & Found actions
-  const handleAddLostFound = (values) => {
+  const handleAddLostFound = (values, photo) => {
+    const nextNumber = Math.max(0, ...lostFound.map(item => parseInt(item.id.replace('LF-', ''), 10) || 0)) + 1;
     const newEntry = {
-      key: String(lostFound.length + 1),
-      id: `LF-${900 + lostFound.length + 1}`,
+      key: `LF-${nextNumber}`,
+      id: `LF-${nextNumber}`,
       name: values.name,
       description: values.description,
       location: values.location,
       date: new Date().toISOString().split('T')[0],
       status: 'Unclaimed',
       claimedBy: '',
-      claimDate: ''
+      claimDate: '',
+      photo: photo || null
     };
     setLostFound([newEntry, ...lostFound]);
     setIsLostFoundModalVisible(false);
     lostFoundForm.resetFields();
     message.success(`New lost item "${values.name}" registered successfully.`);
+  };
+
+  const handleMarkUnclaimed = (itemId) => {
+    setLostFound(lostFound.map(item => {
+      if (item.id === itemId) {
+        message.info(`Item "${item.name}" reverted to Unclaimed.`);
+        return { ...item, status: 'Unclaimed', claimedBy: '', claimDate: '' };
+      }
+      return item;
+    }));
   };
 
   const showClaimModal = (item) => {
@@ -605,6 +621,7 @@ export default function App() {
             claimForm={claimForm}
             showClaimModal={showClaimModal}
             handleClaimItem={handleClaimItem}
+            handleMarkUnclaimed={handleMarkUnclaimed}
           />
         );
       default:

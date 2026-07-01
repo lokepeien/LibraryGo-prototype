@@ -1,6 +1,6 @@
-import React from 'react';
-import { Card, Row, Col, Space, Select, Button, Tag, Avatar, Typography, Divider, Modal, Form, Input } from 'antd';
-import { InboxOutlined, PlusOutlined, EnvironmentOutlined, CalendarOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Card, Row, Col, Space, Select, Button, Tag, Avatar, Typography, Divider, Modal, Form, Input, Upload, message } from 'antd';
+import { InboxOutlined, PlusOutlined, EnvironmentOutlined, CalendarOutlined, CheckCircleOutlined, UploadOutlined, UndoOutlined } from '@ant-design/icons';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -19,12 +19,31 @@ export default function LostFound({
   setSelectedLostItem,
   claimForm,
   showClaimModal,
-  handleClaimItem
+  handleClaimItem,
+  handleMarkUnclaimed
 }) {
+  const [photoDataUrl, setPhotoDataUrl] = useState(null);
+
   // Catalog item cards
   const filteredLost = lostFoundFilter === 'All'
     ? lostFound
     : lostFound.filter(item => item.status === lostFoundFilter);
+
+  const beforePhotoUpload = (file) => {
+    if (!file.type.startsWith('image/')) {
+      message.error('Only image files can be uploaded.');
+      return Upload.LIST_IGNORE;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPhotoDataUrl(reader.result);
+    reader.readAsDataURL(file);
+    return false;
+  };
+
+  const submitFoundItem = (values) => {
+    handleAddLostFound(values, photoDataUrl);
+    setPhotoDataUrl(null);
+  };
 
   return (
     <div className="fade-in-view">
@@ -77,7 +96,11 @@ export default function LostFound({
                     </Tag>
                     <div style={{ fontSize: '11px', color: '#64748b' }}>Item Registry ID: {item.id}</div>
                   </div>
-                  <Avatar shape="square" size={48} style={{ backgroundColor: '#f1f5f9', color: '#1677ff' }} icon={<InboxOutlined />} />
+                  {item.photo ? (
+                    <Avatar shape="square" size={48} src={item.photo} />
+                  ) : (
+                    <Avatar shape="square" size={48} style={{ backgroundColor: '#f1f5f9', color: '#1677ff' }} icon={<InboxOutlined />} />
+                  )}
                 </div>
 
                 <div style={{ flex: '1 0 auto' }}>
@@ -101,10 +124,19 @@ export default function LostFound({
                 </div>
 
                 {isClaimed ? (
-                  <div style={{ background: '#f0fdf4', padding: '10px', borderRadius: '8px', border: '1px solid #dcfce7', fontSize: '12.5px' }}>
-                    <div style={{ color: '#166534', fontWeight: 600 }}>Claimed by: {item.claimedBy}</div>
-                    <div style={{ color: '#15803d', fontSize: '11px' }}>Claim Date: {item.claimDate}</div>
-                  </div>
+                  <>
+                    <div style={{ background: '#f0fdf4', padding: '10px', borderRadius: '8px', border: '1px solid #dcfce7', fontSize: '12.5px', marginBottom: 10 }}>
+                      <div style={{ color: '#166534', fontWeight: 600 }}>Claimed by: {item.claimedBy}</div>
+                      <div style={{ color: '#15803d', fontSize: '11px' }}>Claim Date: {item.claimDate}</div>
+                    </div>
+                    <Button
+                      block
+                      icon={<UndoOutlined />}
+                      onClick={() => handleMarkUnclaimed(item.id)}
+                    >
+                      Revert to Unclaimed
+                    </Button>
+                  </>
                 ) : (
                   <Button
                     type="primary"
@@ -129,6 +161,7 @@ export default function LostFound({
         onCancel={() => {
           setIsLostFoundModalVisible(false);
           lostFoundForm.resetFields();
+          setPhotoDataUrl(null);
         }}
         footer={null}
         destroyOnClose
@@ -136,8 +169,22 @@ export default function LostFound({
         <Form
           form={lostFoundForm}
           layout="vertical"
-          onFinish={handleAddLostFound}
+          onFinish={submitFoundItem}
         >
+          <Form.Item label="Item Photo (optional)">
+            {photoDataUrl ? (
+              <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 8 }}>
+                <img src={photoDataUrl} alt="Found item" style={{ width: '100%', height: 140, objectFit: 'contain', display: 'block', marginBottom: 8 }} />
+                <Button size="small" danger onClick={() => setPhotoDataUrl(null)}>Remove Photo</Button>
+              </div>
+            ) : (
+              <Upload.Dragger showUploadList={false} beforeUpload={beforePhotoUpload} accept="image/*" style={{ padding: '12px 8px' }}>
+                <UploadOutlined style={{ fontSize: '20px', color: '#94a3b8' }} />
+                <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: 4 }}>Click or drag an image to upload</div>
+              </Upload.Dragger>
+            )}
+          </Form.Item>
+
           <Form.Item
             name="name"
             label="Item Name"

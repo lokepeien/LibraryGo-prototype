@@ -21,17 +21,17 @@ export default function StudentBlacklist({
   // Columns for Blacklist Table
   const blacklistColumns = [
     {
-      title: 'Student ID',
-      dataIndex: 'studentId',
-      key: 'studentId',
-      sorter: (a, b) => a.studentId.localeCompare(b.studentId),
-      render: (text) => <Text strong style={{ color: '#0f172a' }}>{text}</Text>
-    },
-    {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (text) => <Text strong style={{ color: '#0f172a' }}>{text}</Text>
+    },
+    {
+      title: 'Gmail',
+      dataIndex: 'email',
+      key: 'email',
+      sorter: (a, b) => a.email.localeCompare(b.email),
       render: (text) => <Text style={{ fontWeight: 500 }}>{text}</Text>
     },
     {
@@ -42,8 +42,8 @@ export default function StudentBlacklist({
       render: (strikes) => {
         return (
           <Space>
-            <Badge count={strikes} style={{ backgroundColor: strikes >= 3 ? '#ff4d4f' : strikes === 2 ? '#fa8c16' : strikes === 1 ? '#1677ff' : '#52c41a' }} />
-            <span style={{ fontSize: '12px', color: '#64748b' }}>/ 3 Strikes</span>
+            <Badge count={strikes} style={{ backgroundColor: strikes >= 5 ? '#ff4d4f' : strikes >= 3 ? '#fa8c16' : strikes >= 1 ? '#1677ff' : '#52c41a' }} />
+            <span style={{ fontSize: '12px', color: '#64748b' }}>/ 5 Strikes</span>
           </Space>
         );
       }
@@ -100,7 +100,7 @@ export default function StudentBlacklist({
   // Filter blacklist records based on search query
   const filteredBlacklist = blacklist.filter(student =>
     student.name.toLowerCase().includes(blacklistSearch.toLowerCase()) ||
-    student.studentId.toLowerCase().includes(blacklistSearch.toLowerCase())
+    student.email.toLowerCase().includes(blacklistSearch.toLowerCase())
   );
 
   const handleExportPdf = () => {
@@ -112,8 +112,8 @@ export default function StudentBlacklist({
 
     autoTable(doc, {
       startY: 28,
-      head: [['Student ID', 'Name', 'Strike Count', 'Disciplinary Status']],
-      body: blacklist.map(s => [s.studentId, s.name, `${s.strikes} / 3`, s.status])
+      head: [['Name', 'Gmail', 'Strike Count', 'Disciplinary Status']],
+      body: blacklist.map(s => [s.name, s.email, `${s.strikes} / 5`, s.status])
     });
 
     doc.save(`blacklist-report-${new Date().toISOString().split('T')[0]}.pdf`);
@@ -126,12 +126,12 @@ export default function StudentBlacklist({
         <Row justify="space-between" align="middle" gutter={[16, 16]}>
           <Col xs={24} md={12}>
             <Title level={4} style={{ margin: 0 }}>🚨 Disciplinary List & Blacklist</Title>
-            <Text type="secondary">Students with three strikes are automatically blacklisted and blocked from NFC seat check-ins.</Text>
+            <Text type="secondary">Students with five strikes are automatically blacklisted and blocked from NFC seat check-ins.</Text>
           </Col>
           <Col xs={24} md={12} style={{ textAlign: screens.md ? 'right' : 'left' }}>
             <Space wrap style={{ width: '100%', justifyContent: screens.md ? 'flex-end' : 'flex-start' }}>
               <Input
-                placeholder="Search Student Name / ID..."
+                placeholder="Search Student Name / Gmail..."
                 prefix={<SearchOutlined style={{ color: '#cbd5e1' }} />}
                 value={blacklistSearch}
                 onChange={(e) => setBlacklistSearch(e.target.value)}
@@ -183,22 +183,22 @@ export default function StudentBlacklist({
           initialValues={{ strikes: 1 }}
         >
           <Form.Item
-            name="studentId"
-            label="UTM Student ID"
-            rules={[
-              { required: true, message: 'Please input UTM Student ID!' },
-              { pattern: /^[AB]\d{2}[A-Z]{2}\d{4}$/i, message: 'Invalid ID Format. Example: A22CS0148' }
-            ]}
-          >
-            <Input placeholder="e.g. A22CS0148" />
-          </Form.Item>
-
-          <Form.Item
             name="name"
             label="Student Name"
             rules={[{ required: true, message: 'Please input student name!' }]}
           >
             <Input placeholder="Full Name as in Matrix Card" />
+          </Form.Item>
+
+          <Form.Item
+            name="email"
+            label="Gmail"
+            rules={[
+              { required: true, message: 'Please input the student\'s Gmail!' },
+              { pattern: /^[a-z0-9._%+-]+@gmail\.com$/i, message: 'Please enter a valid Gmail address.' }
+            ]}
+          >
+            <Input placeholder="e.g. ahmadfaiz.azmi@gmail.com" />
           </Form.Item>
 
           <Form.Item
@@ -209,8 +209,10 @@ export default function StudentBlacklist({
             <Select
               options={[
                 { value: 1, label: '1 Strike (First Warning)' },
-                { value: 2, label: '2 Strikes (Final Warning)' },
-                { value: 3, label: '3 Strikes (Immediate Suspension & Blacklist)' }
+                { value: 2, label: '2 Strikes' },
+                { value: 3, label: '3 Strikes' },
+                { value: 4, label: '4 Strikes (Final Warning)' },
+                { value: 5, label: '5 Strikes (Immediate Suspension & Blacklist)' }
               ]}
             />
           </Form.Item>
