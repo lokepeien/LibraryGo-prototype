@@ -156,11 +156,12 @@ export default function ReserveSeat({
               💺 Seat:
             </Text>
             <Button
-              type="default"
+              type="primary"
+              size="large"
               block
               onClick={() => setViewSeatVisible(true)}
             >
-              🗺️ Select Seat
+              Select Seat
             </Button>
           </div>
 
