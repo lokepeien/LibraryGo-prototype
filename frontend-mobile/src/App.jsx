@@ -301,6 +301,7 @@ export default function App() {
                   setNfcModalVisible={setNfcModalVisible}
                   setAnnouncementsVisible={setAnnouncementsVisible}
                   handleToggleRole={handleToggleRole}
+                  handleEarlyCheckout={handleEarlyCheckout}
                   formatTimer={formatTimer}
                   selectedLibrary={selectedLibrary}
                   setSelectedLibrary={setSelectedLibrary}

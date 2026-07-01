@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Space, Button, Tag, Alert, Divider } from 'antd';
-import { PlayCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { PlayCircleOutlined, InfoCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { Typography } from 'antd';
 
 const { Title, Text } = Typography;
@@ -11,6 +11,7 @@ export default function PersonalDashboard({
   activeBooking,
   setActiveTab,
   simulateNewReservation,
+  handleEarlyCheckout,
   formatTimer
 }) {
   const isBanned = student.strikes >= 5;
@@ -60,7 +61,7 @@ export default function PersonalDashboard({
       {isBanned && (
         <Alert
           message={<span style={{ fontWeight: 700, fontSize: '12px' }}>⛔ Library Privileges Suspended!</span>}
-          description={<span style={{ fontSize: '11px' }}>You have reached the maximum threshold of 5 strikes. NFC desk check-in scanners and seat bookings are locked.</span>}
+          description={<span style={{ fontSize: '11px' }}>You have reached the maximum threshold of 5 strikes. NFC desk check-in scanners and seat bookings are locked. Please perform a walk-in to Library PSZ/PRZS counter to be removed from the blacklist.</span>}
           type="error"
           showIcon
           style={{ borderRadius: 12, marginBottom: 12 }}
@@ -68,35 +69,39 @@ export default function PersonalDashboard({
       )}
 
       {/* Current Reservation Status Card */}
-      {activeBooking.status !== 'None' ? (
-        <Card
-          className="mobile-card"
-          style={{ borderLeft: '4px solid #1677ff', cursor: 'pointer' }}
-          bodyStyle={{ padding: 12 }}
-          onClick={() => setActiveTab('booking')}
-        >
+      {activeBooking.status === 'CheckedIn' ? (
+        <Card className="mobile-card" style={{ borderLeft: '4px solid #52c41a' }} bodyStyle={{ padding: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <Tag color={activeBooking.status === 'Reserved' ? 'warning' : 'success'} style={{ marginBottom: 4 }}>
-                {activeBooking.status === 'Reserved' ? '🎟️ Reserved Seat' : '🟢 Session Running'}
-              </Tag>
+              <Tag color="success" style={{ marginBottom: 4 }}>🟢 Session Running</Tag>
               <Title level={5} style={{ margin: 0, fontSize: '14.5px' }}>Seat: {activeBooking.seatId}</Title>
               <Text type="secondary" style={{ fontSize: '11px' }}>{activeBooking.areaName}</Text>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <Text type="secondary" style={{ fontSize: '10px', display: 'block' }}>REMAINING</Text>
-              <Text strong style={{ fontSize: '14px', color: activeBooking.status === 'Reserved' ? '#fa8c16' : '#52c41a' }}>
+              <Text type="secondary" style={{ fontSize: '10px', display: 'block' }}>CHECK-OUT IN</Text>
+              <Text strong style={{ fontSize: '14px', color: '#52c41a' }}>
                 {formatTimer(activeBooking.timeRemaining)}
               </Text>
             </div>
           </div>
+          <Button
+            type="primary"
+            danger
+            size="middle"
+            block
+            icon={<CloseCircleOutlined />}
+            style={{ marginTop: 12 }}
+            onClick={handleEarlyCheckout}
+          >
+            Manual Check-Out
+          </Button>
         </Card>
       ) : (
         <Card className="mobile-card" bodyStyle={{ padding: 16, textAlign: 'center' }}>
           <Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: '12.5px' }}>
             You do not have any active seat reservation right now.
           </Text>
-          <Button type="primary" size="middle" block icon={<PlayCircleOutlined />} onClick={simulateNewReservation} disabled={isBanned}>
+          <Button type="primary" size="middle" block icon={<PlayCircleOutlined />} onClick={simulateNewReservation} disabled={isBanned || activeBooking.status === 'Reserved'}>
             Simulate New Booking
           </Button>
         </Card>

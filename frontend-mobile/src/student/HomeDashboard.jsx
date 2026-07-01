@@ -20,6 +20,7 @@ export default function HomeDashboard({
   setNfcModalVisible,
   setAnnouncementsVisible,
   handleToggleRole,
+  handleEarlyCheckout,
   formatTimer,
   selectedLibrary,
   setSelectedLibrary,
@@ -73,6 +74,7 @@ export default function HomeDashboard({
             activeBooking={activeBooking}
             setActiveTab={setActiveTab}
             simulateNewReservation={simulateNewReservation}
+            handleEarlyCheckout={handleEarlyCheckout}
             formatTimer={formatTimer}
           />
         );
