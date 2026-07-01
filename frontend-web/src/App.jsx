@@ -475,7 +475,8 @@ export default function App() {
         style={{
           borderRight: '1px solid #e2e8f0',
           position: screens.xs ? 'absolute' : 'relative',
-          height: '100%',
+          height: screens.xs ? '100%' : 'auto',
+          alignSelf: 'stretch',
           zIndex: 1000
         }}
       >
