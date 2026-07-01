@@ -25,14 +25,14 @@ export default function HomeDashboard({
   setSelectedLibrary,
   selectedArea,
   setSelectedArea,
+  selectedSeatId,
+  setSelectedSeatId,
   selectedDate,
   setSelectedDate,
   selectedTimeSlot,
   setSelectedTimeSlot,
   selectedDuration,
   setSelectedDuration,
-  confirmationVisible,
-  setConfirmationVisible,
   handleConfirmReservation
 }) {
   // Sub-navigation state inside the first page landing launchpad:
@@ -50,14 +50,14 @@ export default function HomeDashboard({
             setSelectedLibrary={setSelectedLibrary}
             selectedArea={selectedArea}
             setSelectedArea={setSelectedArea}
+            selectedSeatId={selectedSeatId}
+            setSelectedSeatId={setSelectedSeatId}
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
             selectedTimeSlot={selectedTimeSlot}
             setSelectedTimeSlot={setSelectedTimeSlot}
             selectedDuration={selectedDuration}
             setSelectedDuration={setSelectedDuration}
-            confirmationVisible={confirmationVisible}
-            setConfirmationVisible={setConfirmationVisible}
             handleConfirmReservation={handleConfirmReservation}
           />
         );

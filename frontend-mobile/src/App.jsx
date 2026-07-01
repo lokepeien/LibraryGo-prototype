@@ -18,7 +18,8 @@ import {
   MobileOutlined,
   BellOutlined,
   ScanOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  ArrowLeftOutlined
 } from '@ant-design/icons';
 
 // Student Screens
@@ -66,12 +67,10 @@ export default function App() {
   // New Reservation Form State (Managed centrally, routed by Home Page)
   const [selectedLibrary, setSelectedLibrary] = useState('Perpustakaan Sultanah Zanariah (PSZ)');
   const [selectedArea, setSelectedArea] = useState('Level 2: Quiet Study Area');
+  const [selectedSeatId, setSelectedSeatId] = useState('S01');
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('10:00 AM - 12:00 PM');
   const [selectedDuration, setSelectedDuration] = useState('2 Hours (Max)');
-  
-  // Confirmation Modal
-  const [confirmationVisible, setConfirmationVisible] = useState(false);
 
   // NFC Scanner Modal state
   const [nfcModalVisible, setNfcModalVisible] = useState(false);
@@ -228,20 +227,16 @@ export default function App() {
   const handleConfirmReservation = () => {
     if (student.strikes >= 5) {
       message.error('⛔ Booking Suspended: You have reached the maximum limit of 5 strikes.');
-      setConfirmationVisible(false);
       return;
     }
 
-    let seat = 'L2-S04';
+    const seat = selectedSeatId;
     let nfc = '04:E3:4C:6A:B2:1A:80';
     if (selectedArea.includes('Level 1')) {
-      seat = 'L1-S02';
       nfc = '04:5C:8B:1A:F5:2C:81';
     } else if (selectedArea.includes('Level 3')) {
-      seat = 'L3-S02';
       nfc = '04:AB:CD:EF:01:23:45';
     } else if (selectedArea.includes('Ground')) {
-      seat = 'GF-S03';
       nfc = '04:11:22:33:44:55:66';
     }
 
@@ -254,7 +249,6 @@ export default function App() {
       timerRunning: true
     });
 
-    setConfirmationVisible(false);
     setActiveTab('booking');
     setNfcModalVisible(true);
     message.success(`🎟️ Reserved Seat ${seat}! Please tap your phone with the NFC tag to check in.`);
@@ -311,14 +305,14 @@ export default function App() {
                   setSelectedLibrary={setSelectedLibrary}
                   selectedArea={selectedArea}
                   setSelectedArea={setSelectedArea}
+                  selectedSeatId={selectedSeatId}
+                  setSelectedSeatId={setSelectedSeatId}
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
                   selectedTimeSlot={selectedTimeSlot}
                   setSelectedTimeSlot={setSelectedTimeSlot}
                   selectedDuration={selectedDuration}
                   setSelectedDuration={setSelectedDuration}
-                  confirmationVisible={confirmationVisible}
-                  setConfirmationVisible={setConfirmationVisible}
                   handleConfirmReservation={handleConfirmReservation}
                 />
               )}
@@ -330,6 +324,7 @@ export default function App() {
                   setNfcModalVisible={setNfcModalVisible}
                   handleEarlyCheckout={handleEarlyCheckout}
                   formatTimer={formatTimer}
+                  setActiveTab={setActiveTab}
                 />
               )}
               {activeTab === 'history' && (
@@ -373,6 +368,7 @@ export default function App() {
           setScanning(false);
         }}
         footer={null}
+        closable={false}
         width={320}
         centered
         destroyOnClose
@@ -401,6 +397,20 @@ export default function App() {
           <Text type="secondary" style={{ fontSize: '10px', marginTop: 12, display: 'block' }}>
             Simulates NFC Hardware UID match on your physical device.
           </Text>
+
+          <Button
+            type="default"
+            block
+            icon={<ArrowLeftOutlined />}
+            style={{ marginTop: 16 }}
+            onClick={() => {
+              setNfcModalVisible(false);
+              setScanning(false);
+              setActiveTab('home');
+            }}
+          >
+            Back
+          </Button>
         </div>
       </Modal>
 
@@ -453,13 +463,14 @@ export default function App() {
           </Text>
           <Button
             type="primary"
+            icon={<ArrowLeftOutlined />}
             block
             onClick={() => {
               setCheckoutCompleteVisible(false);
               setActiveTab('home');
             }}
           >
-            Return to Home Now
+            Back
           </Button>
         </div>
       </Modal>

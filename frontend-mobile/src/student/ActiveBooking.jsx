@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Button, Steps, Progress, Typography } from 'antd';
-import { ClockCircleOutlined, ScanOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { ClockCircleOutlined, ScanOutlined, CloseCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -10,7 +10,8 @@ export default function ActiveBooking({
   simulateNewReservation,
   setNfcModalVisible,
   handleEarlyCheckout,
-  formatTimer
+  formatTimer,
+  setActiveTab
 }) {
   if (activeBooking.status === 'None') {
     return (
@@ -103,6 +104,15 @@ export default function ActiveBooking({
         </Button>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+          <Button
+            type="default"
+            size="large"
+            block
+            icon={<ArrowLeftOutlined />}
+            onClick={() => setActiveTab('home')}
+          >
+            Back
+          </Button>
           <Button
             type="primary"
             danger

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Button, Select, Modal, Tabs, Typography, DatePicker } from 'antd';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -94,14 +94,14 @@ export default function ReserveSeat({
   setSelectedLibrary,
   selectedArea,
   setSelectedArea,
+  selectedSeatId,
+  setSelectedSeatId,
   selectedDate,
   setSelectedDate,
   selectedTimeSlot,
   setSelectedTimeSlot,
   selectedDuration,
   setSelectedDuration,
-  confirmationVisible,
-  setConfirmationVisible,
   handleConfirmReservation
 }) {
   const isBanned = student.strikes >= 5;
@@ -148,6 +148,20 @@ export default function ReserveSeat({
                 { value: 'Ground Floor: Multimedia Room', label: 'Ground Floor: Multimedia Room' }
               ]}
             />
+          </div>
+
+          {/* Select Seat Trigger Button */}
+          <div>
+            <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+              💺 Seat:
+            </Text>
+            <Button
+              type="default"
+              block
+              onClick={() => setViewSeatVisible(true)}
+            >
+              🗺️ Select Seat
+            </Button>
           </div>
 
           {/* Date Selector */}
@@ -222,22 +236,11 @@ export default function ReserveSeat({
               size="large"
               block
               disabled={isBanned}
-              onClick={() => setConfirmationVisible(true)}
+              onClick={handleConfirmReservation}
             >
               Check-in
             </Button>
           </div>
-
-          {/* View Seat Trigger Button */}
-          <Button
-            type="default"
-            size="large"
-            block
-            style={{ marginTop: 4 }}
-            onClick={() => setViewSeatVisible(true)}
-          >
-            🗺️ View Seat
-          </Button>
 
           {isBanned && (
             <span style={{ color: '#ff4d4f', fontSize: '10.5px', textAlign: 'center', display: 'block' }}>
@@ -246,52 +249,6 @@ export default function ReserveSeat({
           )}
         </div>
       </Card>
-
-      {/* Modal to display selected booking parameters */}
-      <Modal
-        title={<span style={{ fontWeight: 700 }}>🎉 Booking Parameters Review</span>}
-        visible={confirmationVisible}
-        onCancel={() => setConfirmationVisible(false)}
-        footer={[
-          <Button key="back" onClick={() => setConfirmationVisible(false)}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleConfirmReservation}>
-            Confirm & Start
-          </Button>
-        ]}
-        width={310}
-        centered
-      >
-        <div style={{ padding: '8px 0' }}>
-          <Text type="secondary" style={{ fontSize: '11px', display: 'block', marginBottom: 12 }}>
-            Please review the seat reservation details below:
-          </Text>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
-            <div>
-              <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>SELECTED LIBRARY:</span>
-              <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedLibrary}</Text>
-            </div>
-            <div>
-              <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>AREA ZONE:</span>
-              <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedArea}</Text>
-            </div>
-            <div>
-              <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>DATE:</span>
-              <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedDate ? selectedDate.format('DD MMM YYYY') : ''}</Text>
-            </div>
-            <div>
-              <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>TIME SLOT:</span>
-              <Text strong style={{ fontSize: '12.5px', color: '#1e293b' }}>{selectedTimeSlot}</Text>
-            </div>
-            <div>
-              <span style={{ fontSize: '11px', color: '#64748b', display: 'block' }}>DURATION:</span>
-              <Text strong style={{ fontSize: '12.5px', color: '#1677ff' }}>{selectedDuration}</Text>
-            </div>
-          </div>
-        </div>
-      </Modal>
 
       {/* Book Seat Success Modal */}
       <Modal
@@ -307,8 +264,8 @@ export default function ReserveSeat({
           <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: 16 }}>
             Please check-in before {checkInDeadline}.
           </Text>
-          <Button type="primary" block onClick={() => setBookSuccessVisible(false)}>
-            OK
+          <Button type="primary" icon={<ArrowLeftOutlined />} block onClick={() => setBookSuccessVisible(false)}>
+            Back
           </Button>
         </div>
       </Modal>
@@ -340,6 +297,21 @@ export default function ReserveSeat({
             }
           ]}
         />
+
+        <div style={{ marginTop: 8 }}>
+          <Text strong style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: 6 }}>
+            💺 Select Seat ID:
+          </Text>
+          <Select
+            value={selectedSeatId}
+            onChange={(val) => setSelectedSeatId(val)}
+            style={{ width: '100%' }}
+            options={Array.from({ length: 10 }, (_, i) => {
+              const id = `S${String(i + 1).padStart(2, '0')}`;
+              return { value: id, label: id };
+            })}
+          />
+        </div>
       </Modal>
     </div>
   );
