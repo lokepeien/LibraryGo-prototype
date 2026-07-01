@@ -17,7 +17,8 @@ import {
   WifiOutlined,
   MobileOutlined,
   BellOutlined,
-  ScanOutlined
+  ScanOutlined,
+  CheckCircleOutlined
 } from '@ant-design/icons';
 
 // Student Screens
@@ -79,6 +80,19 @@ export default function App() {
   // Announcement modal state
   const [announcementsVisible, setAnnouncementsVisible] = useState(false);
 
+  // Checkout completed confirmation modal state
+  const [checkoutCompleteVisible, setCheckoutCompleteVisible] = useState(false);
+
+  // Auto-redirect to the Home tab once the checkout completed modal is shown
+  useEffect(() => {
+    if (!checkoutCompleteVisible) return;
+    const timeout = setTimeout(() => {
+      setCheckoutCompleteVisible(false);
+      setActiveTab('home');
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [checkoutCompleteVisible]);
+
   // Timer runner
   useEffect(() => {
     let interval = null;
@@ -134,6 +148,13 @@ export default function App() {
     });
   };
 
+  // Converts the selected session duration label into a countdown in seconds
+  const getDurationSeconds = (duration) => {
+    if (duration === '30 Minutes') return 1800;
+    if (duration === '1 Hour') return 3600;
+    return 7200; // '2 Hours (Max)'
+  };
+
   // NFC Simulation Trigger
   const handleNfcScan = () => {
     if (student.strikes >= 5) {
@@ -148,12 +169,13 @@ export default function App() {
       setNfcModalVisible(false);
 
       if (activeBooking.status === 'Reserved') {
+        const sessionSeconds = getDurationSeconds(selectedDuration);
         setActiveBooking(prev => ({
           ...prev,
           status: 'CheckedIn',
-          timeRemaining: 7200, // 2-hour session
+          timeRemaining: sessionSeconds,
         }));
-        message.success('✅ Seat Checked In! 2-Hour Study Session Active.');
+        message.success(`✅ Seat Checked In! ${selectedDuration} Study Session Active.`);
       } else {
         setActiveBooking({
           seatId: 'L1-S02',
@@ -181,7 +203,8 @@ export default function App() {
 
     setHistoryList([newHistory, ...historyList]);
     setActiveBooking(prev => ({ ...prev, status: 'None', timeRemaining: 0 }));
-    message.success('👋 Checked Out! Seat successfully released for other students.');
+    setActiveTab('home');
+    setCheckoutCompleteVisible(true);
   };
 
   const simulateNewReservation = () => {
@@ -233,7 +256,8 @@ export default function App() {
 
     setConfirmationVisible(false);
     setActiveTab('booking');
-    message.success(`🎟️ Reserved Seat ${seat}! Review parameters and scan NFC tag.`);
+    setNfcModalVisible(true);
+    message.success(`🎟️ Reserved Seat ${seat}! Please tap your phone with the NFC tag to check in.`);
   };
 
   const formatTimer = (secs) => {
@@ -357,7 +381,7 @@ export default function App() {
           <MobileOutlined style={{ fontSize: '48px', color: '#1677ff', marginBottom: 12 }} />
           <Title level={5} style={{ margin: '0 0 8px 0' }}>Simulated NFC Checker</Title>
           <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: 16 }}>
-            {`Checking in Seat: ${activeBooking.seatId}. Tap your phone screen to simulate checking in.`}
+            {`Please tap your phone with the NFC tag on Seat ${activeBooking.seatId} to check in.`}
           </Text>
 
           <div
@@ -411,6 +435,33 @@ export default function App() {
         <Button type="primary" block style={{ marginTop: 16 }} onClick={() => setAnnouncementsVisible(false)}>
           Close
         </Button>
+      </Modal>
+
+      {/* Checkout Completed Modal */}
+      <Modal
+        visible={checkoutCompleteVisible}
+        footer={null}
+        closable={false}
+        width={300}
+        centered
+      >
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <CheckCircleOutlined style={{ fontSize: '48px', color: '#52c41a', marginBottom: 12 }} />
+          <Title level={5} style={{ margin: '0 0 8px 0' }}>Check-Out Completed!</Title>
+          <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: 16 }}>
+            Seat successfully released for other students. Redirecting to Home...
+          </Text>
+          <Button
+            type="primary"
+            block
+            onClick={() => {
+              setCheckoutCompleteVisible(false);
+              setActiveTab('home');
+            }}
+          >
+            Return to Home Now
+          </Button>
+        </div>
       </Modal>
     </div>
   );

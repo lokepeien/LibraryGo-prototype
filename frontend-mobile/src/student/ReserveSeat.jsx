@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Button, Select, Modal, Tabs, Typography, DatePicker } from 'antd';
+import { Card, Button, Select, Modal, Tabs, Typography, DatePicker, message } from 'antd';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -10,6 +10,12 @@ function disabledDate(current) {
   const today = dayjs().startOf('day');
   const tomorrow = today.add(1, 'day');
   return !(current.isSame(today, 'day') || current.isSame(tomorrow, 'day'));
+}
+
+// Check-in deadline is the time slot's start time plus a 5-minute grace period
+function getCheckInDeadline(timeSlot) {
+  const startTime = timeSlot.split(' - ')[0];
+  return dayjs(startTime, 'hh:mm A').add(5, 'minute').format('hh:mm A');
 }
 
 // Seat strip mockup, styled after the library's official "Seat Plan" map view
@@ -202,17 +208,31 @@ export default function ReserveSeat({
             />
           </div>
 
-          {/* Book Seat Trigger Button */}
-          <Button
-            type="primary"
-            size="large"
-            block
-            style={{ marginTop: 8 }}
-            disabled={isBanned}
-            onClick={() => setConfirmationVisible(true)}
-          >
-            Book Seat
-          </Button>
+          {/* Book Seat / Check-in Trigger Buttons */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <Button
+              type="primary"
+              size="large"
+              block
+              disabled={isBanned}
+              onClick={() => {
+                const deadline = getCheckInDeadline(selectedTimeSlot);
+                message.success(`🎉 Book seat success! Please check-in before ${deadline}.`);
+              }}
+            >
+              Book Seat
+            </Button>
+
+            <Button
+              type="primary"
+              size="large"
+              block
+              disabled={isBanned}
+              onClick={() => setConfirmationVisible(true)}
+            >
+              Check-in
+            </Button>
+          </div>
 
           {/* View Seat Trigger Button */}
           <Button
