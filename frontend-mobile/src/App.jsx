@@ -137,8 +137,6 @@ export default function App() {
           timeRemaining: 7200, // 2-hour session
         }));
         message.success('✅ Seat Checked In! 2-Hour Study Session Active.');
-      } else if (activeBooking.status === 'CheckedIn') {
-        handleEarlyCheckout();
       } else {
         setActiveBooking({
           seatId: 'L1-S02',
@@ -331,10 +329,7 @@ export default function App() {
           <MobileOutlined style={{ fontSize: '48px', color: '#1677ff', marginBottom: 12 }} />
           <Title level={5} style={{ margin: '0 0 8px 0' }}>Simulated NFC Checker</Title>
           <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginBottom: 16 }}>
-            {activeBooking.status === 'CheckedIn' 
-              ? `vacating Seat: ${activeBooking.seatId}. Tap your phone screen to simulate checking out.`
-              : `Checking in Seat: ${activeBooking.seatId}. Tap your phone screen to simulate checking in.`
-            }
+            {`Checking in Seat: ${activeBooking.seatId}. Tap your phone screen to simulate checking in.`}
           </Text>
 
           <div

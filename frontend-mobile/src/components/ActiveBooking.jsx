@@ -113,15 +113,6 @@ export default function ActiveBooking({
           >
             Manual Early Check-Out
           </Button>
-          <Button
-            type="default"
-            size="middle"
-            block
-            icon={<ScanOutlined />}
-            onClick={() => setNfcModalVisible(true)}
-          >
-            Simulate Vacate / Checkout Tap
-          </Button>
         </div>
       )}
     </div>
