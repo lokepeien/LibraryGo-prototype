@@ -16,7 +16,6 @@ import {
   Grid
 } from 'antd';
 import {
-  DashboardOutlined,
   AreaChartOutlined,
   StopOutlined,
   AlertOutlined,
@@ -263,14 +262,14 @@ const initialLostFound = [
 export default function App() {
   const screens = useBreakpoint();
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('1'); // Menu index: 1 = Dashboard, 2 = Seats, 3 = Floor Plan, 4 = Blacklist, 5 = Announcements, 6 = Complaints, 7 = Lost & Found
+  const [selectedKey, setSelectedKey] = useState('2'); // Menu index: 2 = Seats, 3 = Floor Plan, 4 = Blacklist, 5 = Announcements, 6 = Complaints, 7 = Lost & Found
   const [staffRole, setStaffRole] = useState('Librarian'); // 'Librarian' | 'Admin' — both currently share identical functions
   const Views = staffRole === 'Admin' ? Admin : Librarian;
 
   const handleToggleStaffRole = () => {
     const next = staffRole === 'Librarian' ? 'Admin' : 'Librarian';
     if (next === 'Librarian' && selectedKey === '8') {
-      setSelectedKey('1');
+      setSelectedKey('2');
     }
     setStaffRole(next);
     message.success(`Switched to ${next} view.`);
@@ -583,19 +582,6 @@ export default function App() {
 
   const renderActiveView = () => {
     switch (selectedKey) {
-      case '1':
-        return (
-          <Views.DashboardOverview
-            screens={screens}
-            bookedSeats={bookedSeats}
-            totalSeats={totalSeats}
-            blacklistedCount={blacklistedCount}
-            activeStrikes={activeStrikes}
-            unresolvedComplaints={unresolvedComplaints}
-            complaints={complaints}
-            lostFound={lostFound}
-          />
-        );
       case '2':
         return (
           <Views.SeatManagement
@@ -693,28 +679,20 @@ export default function App() {
             handleReassignSeat={handleReassignSeat}
           />
         ) : (
-          <Views.DashboardOverview
-            screens={screens}
-            bookedSeats={bookedSeats}
-            totalSeats={totalSeats}
-            blacklistedCount={blacklistedCount}
-            activeStrikes={activeStrikes}
-            unresolvedComplaints={unresolvedComplaints}
-            complaints={complaints}
-            lostFound={lostFound}
+          <Views.SeatManagement
+            seats={seats}
+            seatAreaFilter={seatAreaFilter}
+            setSeatAreaFilter={setSeatAreaFilter}
+            handleToggleSeatStatus={handleToggleSeatStatus}
           />
         );
       default:
         return (
-          <Views.DashboardOverview
-            screens={screens}
-            bookedSeats={bookedSeats}
-            totalSeats={totalSeats}
-            blacklistedCount={blacklistedCount}
-            activeStrikes={activeStrikes}
-            unresolvedComplaints={unresolvedComplaints}
-            complaints={complaints}
-            lostFound={lostFound}
+          <Views.SeatManagement
+            seats={seats}
+            seatAreaFilter={seatAreaFilter}
+            setSeatAreaFilter={setSeatAreaFilter}
+            handleToggleSeatStatus={handleToggleSeatStatus}
           />
         );
     }
@@ -722,8 +700,6 @@ export default function App() {
 
   const getBreadcrumbTitle = () => {
     switch (selectedKey) {
-      case '1':
-        return 'Dashboard Overview';
       case '2':
         return 'Seat Management';
       case '3':
@@ -739,7 +715,7 @@ export default function App() {
       case '8':
         return 'NFC Tags';
       default:
-        return 'Dashboard';
+        return 'Seat Management';
     }
   };
 
@@ -812,9 +788,6 @@ export default function App() {
           onClick={handleMenuClick}
           style={{ borderRight: 0, paddingTop: 16 }}
         >
-          <Menu.Item key="1" icon={<DashboardOutlined />}>
-            Dashboard Overview
-          </Menu.Item>
           <Menu.Item key="2" icon={<AreaChartOutlined />}>
             Seat Management
           </Menu.Item>
@@ -863,7 +836,7 @@ export default function App() {
               <Avatar style={{ backgroundColor: '#1677ff' }} icon={<UserOutlined />} />
               {screens.sm && (
                 <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
-                  <div style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b' }}>{staffRole === 'Admin' ? 'Admin' : 'Librarian Admin'}</div>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b' }}>{staffRole === 'Admin' ? 'Admin' : 'Librarian'}</div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>Staff Domain: @utm.my</div>
                 </div>
               )}
